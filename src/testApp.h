@@ -52,7 +52,9 @@ class testApp : public ofBaseApp{
     ofxOscReceiver receiver;
     string current_msg_string;
     
+    void updateShoeDataObjectWithData(ShoeDataObject newData);
     ShoeDataObject currentShoeDataObject;
+    ShoeDataObject currentShoeDataObjectSmoothed;
     vector<ShoeDataObject> dataObjects;
     ShoeDataObject shoeDataObjectWorking;
     

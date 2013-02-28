@@ -1,6 +1,6 @@
 #include "testApp.h"
 
-#define kFBORenderScale 1
+#define kFBORenderScale .5
 #define kFBOWidth 1920
 #define kFBOHeight 1080
 
@@ -14,6 +14,7 @@ void testApp::setup(){
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofBackground(0);
 	ofSetVerticalSync(false );
+    // something
     
     // allocate FBO
 //    rgbaFbo.allocate(1080, 960, GL_RGBA); // with alpha, 8 bits red, 8 bits green, 8 bits blue, 8 bits alpha, from 0 to 255 in 256 steps
@@ -42,7 +43,7 @@ void testApp::setup(){
 	ofEnableAlphaBlending();
 		
 	//we load a font and tell OF to make outlines so we can draw it as GL shapes rather than textures
-	font.loadFont("type/OpenSans-ExtraBold.ttf", 100, true, false, true, 0.2, 100);
+	font.loadFont("type/OpenSans-ExtraBold.ttf", 150, true, false, true, 0.2, 100);
 	shader.load("shaders/noise.vert", "shaders/noise.frag");
     
     gplusLabel.allocate(256, 256, OF_IMAGE_COLOR_ALPHA);
@@ -117,62 +118,10 @@ void testApp::update(){
             
             //shoeData.textIndex = m.getArgAsInt32(8);
 //            cout << "shoe " << shoeData.force << " ay" << shoeData.ay << "\n";
-            currentShoeDataObject = shoeData;
-            
-            if(dataObjects.size()<kObjectBufferSize){
-                dataObjects.push_back(currentShoeDataObject);
-            }else{
-                dataObjectInsertionIndex++;
-                if(dataObjectInsertionIndex>dataObjects.size()-1){
-                    dataObjectInsertionIndex = 0;
-                }
-                dataObjects[dataObjectInsertionIndex] = currentShoeDataObject;
-            }
+            // TODO: call this from serial as well when not using OSC
+            updateShoeDataObjectWithData(shoeData);
         }
         
-		if(m.getAddress() == "/mouse/position"){
-			// both the arguments are int32's
-            ofLog(OF_LOG_NOTICE,"mouse x=%i y=%i",m.getArgAsInt32(0),m.getArgAsInt32(1));
-        }
-		// check for mouse button message
-		else if(m.getAddress() == "/mouse/button"){
-			// the single argument is a string
-			//mouseButtonState = m.getArgAsString(0);
-            distortAmt+=1;  
-            cout << "got a mouse button thingy";
-		}
-		else{
-			// unrecognized message: display on the bottom of the screen
-			string msg_string;
-			msg_string = m.getAddress();
-			msg_string += ": ";
-			for(int i = 0; i < m.getNumArgs(); i++){
-				// get the argument type
-				msg_string += m.getArgTypeName(i);
-				msg_string += ":";
-				// display the argument - make sure we get the right type
-				if(m.getArgType(i) == OFXOSC_TYPE_INT32){
-					msg_string += ofToString(m.getArgAsInt32(i));
-				}
-				else if(m.getArgType(i) == OFXOSC_TYPE_FLOAT){
-					msg_string += ofToString(m.getArgAsFloat(i));
-				}
-				else if(m.getArgType(i) == OFXOSC_TYPE_STRING){
-					msg_string += m.getArgAsString(i);
-				}
-				else{
-					msg_string += "unknown";
-				}
-			}
-			// add to the list of strings to display
-//			msg_strings[current_msg_string] = msg_string;
-//			timers[current_msg_string] = ofGetElapsedTimef() + 5.0f;
-//			current_msg_string = (current_msg_string + 1) % NUM_MSG_STRINGS;
-//			// clear the next line
-//			msg_strings[current_msg_string] = "";
-            current_msg_string = msg_string;
-            
-		}
         
 	}
     
@@ -196,8 +145,13 @@ void testApp::update(){
 //     cout << phraseWordIndex << "\n";
     // cycle through worcount:
     float wordTime = .15;
-    if(currentPhraseWords[phraseWordIndex].length()>0 && currentPhraseWords[phraseWordIndex].at(currentPhraseWords[phraseWordIndex].length()-1)==','){
-        wordTime*=3;
+    if(currentPhraseWords[phraseWordIndex].length()>0){
+        char lastChar =currentPhraseWords[phraseWordIndex].at(currentPhraseWords[phraseWordIndex].length()-1);
+        if(lastChar ==','){
+            wordTime*=3;
+        }else if (lastChar == '.'){
+            wordTime*=6;
+        }
     }
     if(currentTime-lastPhraseWordIteratedTime>wordTime){
         if(phraseWordIndex<currentPhraseWords.size()-1)phraseWordIndex++;
@@ -207,7 +161,29 @@ void testApp::update(){
     analyzeShoeData();
 
 }
+void testApp::updateShoeDataObjectWithData(ShoeDataObject newData){
+    currentShoeDataObject = newData;
+    // make us a smoothed version:
+    float smoothingDiv =10.;
+    currentShoeDataObjectSmoothed.ax+=(currentShoeDataObject.ax-currentShoeDataObjectSmoothed.ax)/smoothingDiv;
+    currentShoeDataObjectSmoothed.ay+=(currentShoeDataObject.ay-currentShoeDataObjectSmoothed.ay)/smoothingDiv;
+    currentShoeDataObjectSmoothed.az+=(currentShoeDataObject.az-currentShoeDataObjectSmoothed.az)/smoothingDiv;
+    currentShoeDataObjectSmoothed.gx+=(currentShoeDataObject.gx-currentShoeDataObjectSmoothed.gx)/smoothingDiv;
+    currentShoeDataObjectSmoothed.gy+=(currentShoeDataObject.gy-currentShoeDataObjectSmoothed.gy)/smoothingDiv;
+    currentShoeDataObjectSmoothed.gz+=(currentShoeDataObject.gz-currentShoeDataObjectSmoothed.gz)/smoothingDiv;
+    
+    currentShoeDataObjectSmoothed.force +=(currentShoeDataObject.force-currentShoeDataObjectSmoothed.force)/smoothingDiv;
 
+    if(dataObjects.size()<kObjectBufferSize){
+        dataObjects.push_back(currentShoeDataObject);
+    }else{
+        dataObjectInsertionIndex++;
+        if(dataObjectInsertionIndex>dataObjects.size()-1){
+            dataObjectInsertionIndex = 0;
+        }
+        dataObjects[dataObjectInsertionIndex] = currentShoeDataObject;
+    }
+}
 //--------------------------------------------------------------
 void testApp::analyzeShoeData(){
     // MARK: THIS IS IT text distortion from data
@@ -307,6 +283,7 @@ void testApp::drawFbo(){
     ofSetColor(255,255,255,255);
 	ofFill();
     float div = 20;
+//    distortAmt3 = 1;
 	distortAmt+=(0-distortAmt)/div;
     distortAmt2+=(0-distortAmt2)/div;
     
@@ -326,7 +303,9 @@ void testApp::drawFbo(){
         
         //we also pass in the mouse position
         //we have to transform the coords to what the shader is expecting which is 0,0 in the center and y axis flipped.
-        shader.setUniform2f("mouse", mouseX - ofGetWidth()/2, ofGetHeight()/2-mouseY );
+        //shader.setUniform2f("mouse", mouseX - ofGetWidth()/2, ofGetHeight()/2-mouseY );
+        
+        shader.setUniform2f("mouse", 0, currentShoeDataObject.ay);
         
 	}
 	
@@ -353,7 +332,6 @@ void testApp::drawFbo(){
     // float offset = -abs(sin(ofGetElapsedTimef()*2))*200;
     float centerPoint =(kFBOHeight)/2;
    
-    ofTranslate(700, centerPoint-(renderedPhraseLineCount*144/2));
 
     //font.drawStringAsShapes("go! go!\ngo! go! go!", 0,0);
     string phraseString;
@@ -365,7 +343,7 @@ void testApp::drawFbo(){
             //font.drawStringAsShapes(currentPhraseWords[i], 0, i*144);
             
             lineLength +=currentPhraseWords[i].length()+1;
-            if (lineLength>10) {
+            if (lineLength>14) {
                 phraseString.append("\n");
                 lineLength = currentPhraseWords[i].length();
                 renderedPhraseLineCount++;
@@ -373,12 +351,20 @@ void testApp::drawFbo(){
                 if(i>0)phraseString.append(" ");
             }
             phraseString.append(currentPhraseWords[i]);
-        
-//            if(currentPhraseWords[i].length()>10)
-
             
         }
+        float lineHeight = 160;
+        //ofTranslate(176, centerPoint-(renderedPhraseLineCount*lineHeight/2));
+        
+        
+        ofRectangle bounds =        font.getStringBoundingBox(phraseString, 0, 0);
+        ofTranslate(176,(centerPoint+lineHeight)-bounds.height/2);
+//        ofSetColor(255, 0, 0,100);
+//        ofRect(bounds);
+//        cout << bounds.height <<"\n";
+//                ofTranslate(0, );
         font.drawStringAsShapes(phraseString, 0, 0);
+
     }
     // draw the second set: (this is really really wasteful!)
     //    if(doShader){
@@ -422,7 +408,7 @@ void testApp::keyReleased(int key){
     if(key == '2'){
         distortAmt2 +=1;
     }else if(key == '4'){
-            distortAmt4 +=1;
+        distortAmt4 +=1;
     }else{
         distortAmt += 10;
     }

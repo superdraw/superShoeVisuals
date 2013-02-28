@@ -8,24 +8,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "src/testApp.cpp"
-         timestampString = "383708432.566235"
+         timestampString = "383762885.25584"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "203"
-         endingLineNumber = "203"
-         landmarkName = "testApp::update()"
-         landmarkType = "5">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "No"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "src/testApp.cpp"
-         timestampString = "383708384.833737"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "123"
-         endingLineNumber = "123"
+         startingLineNumber = "156"
+         endingLineNumber = "156"
          landmarkName = "testApp::update()"
          landmarkType = "5">
       </FileBreakpoint>
