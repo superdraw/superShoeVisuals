@@ -144,8 +144,11 @@ void testApp::update(){
     };
 //     cout << phraseWordIndex << "\n";
     // cycle through worcount:
-    float wordTime = .15;
+    float wordTime = .10;
+    // add a per character time so that larger words take a bit longer.
+
     if(currentPhraseWords[phraseWordIndex].length()>0){
+        wordTime += currentPhraseWords[phraseWordIndex].length()*.02;
         char lastChar =currentPhraseWords[phraseWordIndex].at(currentPhraseWords[phraseWordIndex].length()-1);
         if(lastChar ==','){
             wordTime*=3;
@@ -164,7 +167,7 @@ void testApp::update(){
 void testApp::updateShoeDataObjectWithData(ShoeDataObject newData){
     currentShoeDataObject = newData;
     // make us a smoothed version:
-    float smoothingDiv =10.;
+    float smoothingDiv =100.;
     currentShoeDataObjectSmoothed.ax+=(currentShoeDataObject.ax-currentShoeDataObjectSmoothed.ax)/smoothingDiv;
     currentShoeDataObjectSmoothed.ay+=(currentShoeDataObject.ay-currentShoeDataObjectSmoothed.ay)/smoothingDiv;
     currentShoeDataObjectSmoothed.az+=(currentShoeDataObject.az-currentShoeDataObjectSmoothed.az)/smoothingDiv;
@@ -208,7 +211,7 @@ void testApp::analyzeShoeData(){
         distortAmt += (currentShoeDataObject.force/5000);
     }
     if(currentShoeDataObject.ay<0){
-        distortAmt3 += abs(currentShoeDataObject.ay)/1000;
+        distortAmt5 += abs(currentShoeDataObject.ay)/1000;
     }
 
 }
@@ -216,7 +219,7 @@ void testApp::draw(){
     ofEnableAlphaBlending();
     // just clear to this color:
     // TODO: this background color is set by which quad or place we're in!
-    ofClear(0, 0, 255);
+    ofClear(0, 100, 255);
     
 
     
@@ -264,7 +267,7 @@ void testApp::draw(){
     ofRotateY(currentShoeDataObject.gy);
     ofRotateZ(currentShoeDataObject.gz);
     ofSetColor(255,255,255,50);
-    ofBox(100);
+    ofBox(200);
 }
 void testApp::drawFbo(){
    
@@ -290,6 +293,7 @@ void testApp::drawFbo(){
     distortAmt3+=(0-distortAmt3)/div;
     
     distortAmt4+=(0-distortAmt4)/div;
+    distortAmt5+=(0-distortAmt5)/div;
     
 	if( doShader ){
 		shader.begin();
@@ -300,19 +304,17 @@ void testApp::drawFbo(){
         shader.setUniform1f("distortAmount2", distortAmt2 );
         shader.setUniform1f("distortAmount3", distortAmt3 );
         shader.setUniform1f("distortAmount4", distortAmt4 );
+        shader.setUniform1f("distortAmount5", distortAmt5 );
         
         //we also pass in the mouse position
         //we have to transform the coords to what the shader is expecting which is 0,0 in the center and y axis flipped.
-        //shader.setUniform2f("mouse", mouseX - ofGetWidth()/2, ofGetHeight()/2-mouseY );
-        
-        shader.setUniform2f("mouse", 0, currentShoeDataObject.ay);
+        //shader.setUniform2f("mouse", mouseX - ofGetWidth()/2, ofGetHeight()/2-mouseY ;)
+        shader.setUniform2f("mouse", 0, currentShoeDataObjectSmoothed.ay);
         
 	}
 	
     //finally draw our text
     font.setLetterSpacing(.9);
-    
-    // TODO: get this working for stringasshapes...
     font.setSpaceSize(.6);
     //    font.setLineHeight(.2);
     //    font.setGlobalDpi(123);
@@ -409,6 +411,8 @@ void testApp::keyReleased(int key){
         distortAmt2 +=1;
     }else if(key == '4'){
         distortAmt4 +=1;
+    }else if(key == '5'){
+        distortAmt5 +=1;
     }else{
         distortAmt += 10;
     }

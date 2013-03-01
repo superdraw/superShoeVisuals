@@ -1,5 +1,12 @@
 #version 120
 
+uniform float distortAmount1 = 1.0;
+uniform float distortAmount2 = 1.0;
+uniform float distortAmount3 = 1.0;
+uniform float distortAmount4 = 1.0;
+uniform float distortAmount5 = 1.0;
+
+
 void main(){
 	//this is the fragment shader
 	//this is where the pixel level drawing happens
@@ -15,6 +22,7 @@ void main(){
 //    }else{
 //		gl_FragColor.a = 0.0;
 //	}
-    gl_FragColor = gl_Color;
+    gl_Color+=gl_Color * (1-distortAmount5);
+    gl_FragColor =gl_Color;
 	
 }

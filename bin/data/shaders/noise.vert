@@ -6,6 +6,7 @@ uniform float distortAmount1 = 1.0;
 uniform float distortAmount2 = 1.0;
 uniform float distortAmount3 = 1.0;
 uniform float distortAmount4 = 1.0;
+uniform float distortAmount5 = 1.0;
 uniform vec2 mouse;
 
 //generate a random value from four points
@@ -16,7 +17,10 @@ vec4 rand(vec2 A,vec2 B,vec2 C,vec2 D){
 
 	return fract(sin(tmp) * 43758.5453)* 2.0 - 1.0; 
 } 
-
+float proportionTo(float n1,float n2,float percent){
+	// p = between 0 and 1
+	return ((n2-n1)*percent)+n1;
+}
 //this is similar to a perlin noise function
 float noise(vec2 coord,float d){ 
 
@@ -65,7 +69,7 @@ void main(){
 	vec2 d = pos.xy - mouse;
     
 	float dist =  sqrt(d.x*d.x + d.y*d.y);
-    float maxDist = 900;
+    float maxDist = 1200;
     float masterAreaModifier = 1;
 	if( dist < maxDist && dist > 0  ){
 		
@@ -98,7 +102,7 @@ void main(){
 	
     float aadd2 = 0.;
     if(distortAmount2!=0){
-        float roundAmt = 100.0*distortAmount2*masterAreaModifier;
+        float roundAmt = 100.0*distortAmount2;
         pos.x = floor(pos.x/roundAmt)*roundAmt;
         pos.y = floor(pos.y/roundAmt)*roundAmt;
       //  aadd2 = rand2(vec2(pos.x*distortAmount2, pos.y*distortAmount2))
@@ -116,10 +120,25 @@ void main(){
 //        pos.y = floor(pos.y/roundAmt)*roundAmt;
         //  aadd2 = rand2(vec2(pos.x*distortAmount2, pos.y*distortAmount2))
     }
+    if(distortAmount5!=0){
+        // modulate color based on distance:
+        //pos.x+=sin(masterAreaModifier*distortAmount5*20)*distortAmount5*100;
+        //pos.y+=cos(masterAreaModifier*distortAmount5*20)*distortAmount5*100;
+        float a = sin(timeValX+ masterAreaModifier*distortAmount5*100)*distortAmount5;
+        float r =cos(timeValX+ masterAreaModifier*distortAmount5*100)*distortAmount5;
+        float g =cos(timeValX+ masterAreaModifier*distortAmount5*40)*distortAmount5;
+                float b =sin(timeValX+ masterAreaModifier*distortAmount5*80)*distortAmount5;
+        col.a = proportionTo(col.a,a,distortAmount5);
+            col.r =proportionTo(col.r,r,distortAmount5);
+                    col.g =proportionTo(col.g,g,distortAmount5);
+                    col.b =proportionTo(col.b,b,distortAmount5);
+    }
     
 	//finally set the pos to be that actual position rendered
 	gl_Position = pos;
 
+    // distortion 5:
+    
 	//modify our color
 	
 //	col.b += noiseB;

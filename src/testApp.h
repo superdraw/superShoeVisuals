@@ -38,6 +38,7 @@ class testApp : public ofBaseApp{
     float distortAmt2;
     float distortAmt3;
     float distortAmt4;
+    float distortAmt5;
     
     //8 bits red, 8 bits green, 8 bits blue, from 0 to 255 in 256 steps
     ofFbo rgbaFbo; // with alpha
