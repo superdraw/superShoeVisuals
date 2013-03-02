@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxOsc.h"
 #include "ShoeConstants.h"
+#include "TextWordBlock.h"
 
 #define kOscListenPort 12345
 
@@ -26,7 +27,11 @@ class testApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
-		ofTrueTypeFont font;
+		vector<ofTrueTypeFont> font;
+        vector<TextWordBlock> wordBlocks;
+//    TextWordBlock wordBlock1;
+//    TextWordBlock wordBlock2;
+    float textStartY;
 		ofShader shader;
 		bool doShader;
     

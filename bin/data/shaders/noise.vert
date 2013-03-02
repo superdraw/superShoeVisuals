@@ -86,10 +86,10 @@ void main(){
 		
 		//normalize our repulsion vector
 		d /= dist;
-		
+		float p = dist/maxDist;
 		//apply the repulsion to our position
-		pos.x += d.x * pct * 200.0f*distortAmount3 ;
-		pos.y += d.y * pct * 200.0f*distortAmount3 ;
+		pos.x += d.x * p * 1800.0f*distortAmount3*masterAreaModifier ;
+		pos.y += d.y * p * 1800.0f*distortAmount3*masterAreaModifier ;
 	}
     vec4 col = gl_Color;
 
@@ -102,7 +102,7 @@ void main(){
 	
     float aadd2 = 0.;
     if(distortAmount2!=0){
-        float roundAmt = 100.0*distortAmount2;
+        float roundAmt = 300.*distortAmount2;
         pos.x = floor(pos.x/roundAmt)*roundAmt;
         pos.y = floor(pos.y/roundAmt)*roundAmt;
       //  aadd2 = rand2(vec2(pos.x*distortAmount2, pos.y*distortAmount2))
@@ -111,11 +111,17 @@ void main(){
     if(distortAmount4!=0){
 //        float roundAmt = 100.0*distortAmount2;
 //        pos.x+=distortAmount4*100.;
-        if(mod(floor(pos.x),5)==0){
-            pos.y +=rand2(pos2D)*distortAmount4*500*masterAreaModifier;
-            pos.y -=rand2(pos2Dinv)*distortAmount4*500*masterAreaModifier;
+        if(mod(floor(pos.x),4)==0){
+            pos.y +=rand2(pos2D)*distortAmount4*5000*masterAreaModifier;
+            pos.y -=rand2(pos2Dinv)*distortAmount4*5000*masterAreaModifier;
             col.a-=distortAmount4*2;
+            //col.a = 0;
+        }else{
+//            pos.y -=rand2(pos2Dinv)*distortAmount4*5000*masterAreaModifier;
+//            col.a-=distortAmount4*2;
+//            col.a = 1-distortAmount4;
         }
+
 //        pos.x = floor(pos.x/roundAmt)*roundAmt;
 //        pos.y = floor(pos.y/roundAmt)*roundAmt;
         //  aadd2 = rand2(vec2(pos.x*distortAmount2, pos.y*distortAmount2))
@@ -147,3 +153,4 @@ void main(){
 	
 	gl_FrontColor =  col;
 }
+ 

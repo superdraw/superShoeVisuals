@@ -4,6 +4,8 @@
 #define kFBOWidth 1920
 #define kFBOHeight 1080
 
+
+#define kTextRenderAlpha 110
 //--------------------------------------------------------------
 void testApp::setup(){
     // listen on the given port
@@ -43,13 +45,20 @@ void testApp::setup(){
 	ofEnableAlphaBlending();
 		
 	//we load a font and tell OF to make outlines so we can draw it as GL shapes rather than textures
-	font.loadFont("type/OpenSans-ExtraBold.ttf", 150, true, false, true, 0.2, 100);
+    int fontSteps = 3;
+    for (int i=0; i<fontSteps; i++) {
+        float size = 100+ ((float)i/(fontSteps-1))*100;
+        ofTrueTypeFont tempFont;
+        tempFont.loadFont("type/OpenSans-ExtraBold.ttf", size, true, false, true, 0.2, 100);
+        font.push_back(tempFont);
+    }
+	
 	shader.load("shaders/noise.vert", "shaders/noise.frag");
     
-    gplusLabel.allocate(256, 256, OF_IMAGE_COLOR_ALPHA);
+    gplusLabel.allocate(152, 152, OF_IMAGE_COLOR_ALPHA);
 
     gplusLabel.loadImage("images/gplus_corner.png");
-    gplusLabel.resize(256*kFBORenderScale, 256*kFBORenderScale);
+    gplusLabel.resize(152*kFBORenderScale, 152*kFBORenderScale);
 	
 	doShader = true;
     distortAmt = 0;
@@ -129,7 +138,7 @@ void testApp::update(){
     float currentTime = ofGetElapsedTimef();
    
     //TODO: this should be coming from the shoe!
-    if(currentTime-lastPhraseSelectedTime>4){
+    if(currentTime-lastPhraseSelectedTime>6){
         lastPhraseSelectedTime = currentTime;
         currentPhraseIndex++;
         currentPhraseIndex %= phrases.size();
@@ -141,10 +150,24 @@ void testApp::update(){
         oldPhraseIndex = currentPhraseIndex;
         lastPhraseWordIteratedTime = currentTime;
         currentPhraseWords = ofSplitString(phrases[currentPhraseIndex], " ");
+        
+        for (int i=0; i<currentPhraseWords.size(); i++) {
+            TextWordBlock wordBlock;
+            int sizeIndex = ofRandom(0, font.size()-1);
+            wordBlock.initParams(currentPhraseWords[i], font[sizeIndex]);
+            if(i<wordBlocks.size()){
+                wordBlocks[i] = wordBlock;
+            }else{
+                wordBlocks.push_back(wordBlock);
+            }
+        }
+//        wordBlock1.initParams(currentPhraseWords[0], font[0]);
+//        wordBlock2.initParams(currentPhraseWords[1], font[font.size()-1]);
+        
     };
 //     cout << phraseWordIndex << "\n";
     // cycle through worcount:
-    float wordTime = .10;
+    float wordTime = .07;
     // add a per character time so that larger words take a bit longer.
 
     if(currentPhraseWords[phraseWordIndex].length()>0){
@@ -153,7 +176,7 @@ void testApp::update(){
         if(lastChar ==','){
             wordTime*=3;
         }else if (lastChar == '.'){
-            wordTime*=6;
+            wordTime*=4;
         }
     }
     if(currentTime-lastPhraseWordIteratedTime>wordTime){
@@ -167,7 +190,7 @@ void testApp::update(){
 void testApp::updateShoeDataObjectWithData(ShoeDataObject newData){
     currentShoeDataObject = newData;
     // make us a smoothed version:
-    float smoothingDiv =100.;
+    float smoothingDiv =10.;
     currentShoeDataObjectSmoothed.ax+=(currentShoeDataObject.ax-currentShoeDataObjectSmoothed.ax)/smoothingDiv;
     currentShoeDataObjectSmoothed.ay+=(currentShoeDataObject.ay-currentShoeDataObjectSmoothed.ay)/smoothingDiv;
     currentShoeDataObjectSmoothed.az+=(currentShoeDataObject.az-currentShoeDataObjectSmoothed.az)/smoothingDiv;
@@ -207,11 +230,11 @@ void testApp::analyzeShoeData(){
 //        distortAmt2+=10;
 //    }
     
-    if(currentShoeDataObject.force>100){
-        distortAmt += (currentShoeDataObject.force/5000);
+    if(currentShoeDataObjectSmoothed.force>100){
+        distortAmt += (currentShoeDataObjectSmoothed.force/5000);
     }
     if(currentShoeDataObject.ay<0){
-        distortAmt5 += abs(currentShoeDataObject.ay)/1000;
+        distortAmt4 += abs(currentShoeDataObject.ay)/1000;
     }
 
 }
@@ -221,11 +244,8 @@ void testApp::draw(){
     // TODO: this background color is set by which quad or place we're in!
     ofClear(0, 100, 255);
     
-
+//font.loadFont("type/OpenSans-ExtraBold.ttf", mouseX+10, true, false, true, 0.2, 100);
     
-   
-    
-
 	//lets draw some graphics into our two fbos
     if(useFbo) rgbaFbo.begin();
     drawFbo();
@@ -262,10 +282,10 @@ void testApp::draw(){
     
     ofNoFill();
     ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-    ofTranslate(currentShoeDataObject.ax, currentShoeDataObject.ay, currentShoeDataObject.az);
-    ofRotateX(currentShoeDataObject.gx);
-    ofRotateY(currentShoeDataObject.gy);
-    ofRotateZ(currentShoeDataObject.gz);
+    ofTranslate(currentShoeDataObjectSmoothed.ax, currentShoeDataObjectSmoothed.ay, currentShoeDataObjectSmoothed.az);
+    ofRotateX(currentShoeDataObjectSmoothed.gx);
+    ofRotateY(currentShoeDataObjectSmoothed.gy);
+    ofRotateZ(currentShoeDataObjectSmoothed.gz);
     ofSetColor(255,255,255,50);
     ofBox(200);
 }
@@ -279,11 +299,10 @@ void testApp::drawFbo(){
 	ofSetColor(0,0,0, fadeAmt);
 	ofRect(0,0,kFBOWidth,kFBOHeight);
     
-
     // now draw the regular scene:
-    
+        
     ofEnableBlendMode(OF_BLENDMODE_ADD);
-    ofSetColor(255,255,255,255);
+    ofSetColor(255,255,255,kTextRenderAlpha);
 	ofFill();
     float div = 20;
 //    distortAmt3 = 1;
@@ -314,18 +333,23 @@ void testApp::drawFbo(){
 	}
 	
     //finally draw our text
-    font.setLetterSpacing(.9);
-    font.setSpaceSize(.6);
+//    int whichSize = ((float)mouseX/ofGetWidth())*(font.size()-1);
+//    if (whichSize>font.size()-1)whichSize = font.size()-1;
+    int whichSize = font.size()-2;
+    ofTrueTypeFont currentFont = font[1];
+    currentFont.setLetterSpacing(.95);
+    currentFont.setSpaceSize(.6);
+
     //    font.setLineHeight(.2);
     //    font.setGlobalDpi(123);
     
-    //    ofStyle style;
-    //    style.smoothing = true;
-    //    style.bFill = false;
-    //    style.curveResolution = 200;
-    //    style.circleResolution = 200;
-    ////    style.lineWidth =10;
-    //    ofSetStyle(style);
+//    ofStyle style;
+//    style.smoothing = true;
+//    style.bFill = false;
+//    style.curveResolution = 200;
+//    style.circleResolution = 200;
+////    style.lineWidth =10;
+//    ofSetStyle(style);
     
    // 3lines font.drawStringAsShapes("really?\nis that all\nyou got?", 90, 260);
    // font.drawStringAsShapes("really? is that\nall you got?", 90, 260);
@@ -345,7 +369,7 @@ void testApp::drawFbo(){
             //font.drawStringAsShapes(currentPhraseWords[i], 0, i*144);
             
             lineLength +=currentPhraseWords[i].length()+1;
-            if (lineLength>14) {
+            if (lineLength>15) {
                 phraseString.append("\n");
                 lineLength = currentPhraseWords[i].length();
                 renderedPhraseLineCount++;
@@ -355,18 +379,51 @@ void testApp::drawFbo(){
             phraseString.append(currentPhraseWords[i]);
             
         }
-        float lineHeight = 160;
+        float lineHeight = currentFont.getStringBoundingBox("X", 0, 0).height;
         //ofTranslate(176, centerPoint-(renderedPhraseLineCount*lineHeight/2));
         
         
-        ofRectangle bounds =        font.getStringBoundingBox(phraseString, 0, 0);
+        ofRectangle bounds =        currentFont.getStringBoundingBox(phraseString, 0, 0);
+        ofPushMatrix();
         ofTranslate(176,(centerPoint+lineHeight)-bounds.height/2);
 //        ofSetColor(255, 0, 0,100);
 //        ofRect(bounds);
 //        cout << bounds.height <<"\n";
 //                ofTranslate(0, );
-        font.drawStringAsShapes(phraseString, 0, 0);
-
+//        ofNoFill();
+        currentFont.drawStringAsShapes(phraseString, 0, 0);
+        
+        ofPopMatrix();
+        ofFill();
+        ofPoint startPoint;
+        
+        ofRectangle prevBounds;
+        float totalMaxHeight =0;
+        float currentMaxHeight =0;
+        float space = 80;
+        startPoint.y = centerPoint-199;
+        startPoint.x = 176;
+        for (int i =0; i<=phraseWordIndex; i++) {
+            // translate by the size of the last shapes drawn???
+            //font.drawStringAsShapes(currentPhraseWords[i], 0, i*144);
+            
+//            wordBlocks[i].draw(startPoint.x,startPoint.y);
+            if(wordBlocks[i].bounds.height>currentMaxHeight) currentMaxHeight = wordBlocks[i].bounds.height;
+            if(startPoint.x+wordBlocks[i].bounds.width+space<kFBOWidth){
+                startPoint.x+=wordBlocks[i].bounds.width + space;
+            }else{
+                startPoint.x = 176;
+                startPoint.y += currentMaxHeight;
+                currentMaxHeight = wordBlocks[i].bounds.height;
+            }
+            prevBounds = wordBlocks[i].bounds;
+            
+        }
+        textStartY = totalMaxHeight;
+//        ofTranslate(0,wordBlock1.bounds.height);
+//        wordBlock1.draw();
+//        ofTranslate(wordBlock1.bounds.width,0);
+//        wordBlock2.draw();
     }
     // draw the second set: (this is really really wasteful!)
     //    if(doShader){
@@ -409,10 +466,14 @@ void testApp::keyReleased(int key){
 	
     if(key == '2'){
         distortAmt2 +=1;
+    }else if(key == '3'){
+        distortAmt3 +=1;
     }else if(key == '4'){
         distortAmt4 +=1;
     }else if(key == '5'){
         distortAmt5 +=1;
+    }else if(key == '7'){
+        distortAmt4 +=1;
     }else{
         distortAmt += 10;
     }

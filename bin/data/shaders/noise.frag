@@ -5,7 +5,13 @@ uniform float distortAmount2 = 1.0;
 uniform float distortAmount3 = 1.0;
 uniform float distortAmount4 = 1.0;
 uniform float distortAmount5 = 1.0;
+uniform float timeValX = 0.0;
+uniform float timeValY = 0.0;
 
+float proportionTo(float n1,float n2,float percent){
+	// p = between 0 and 1
+	return ((n2-n1)*percent)+n1;
+}
 
 void main(){
 	//this is the fragment shader
@@ -22,7 +28,13 @@ void main(){
 //    }else{
 //		gl_FragColor.a = 0.0;
 //	}
-    gl_Color+=gl_Color * (1-distortAmount5);
-    gl_FragColor =gl_Color;
+    vec4 col = gl_Color;
+    if(distortAmount5>0.){
+//        col+= col* cos(sin(timeValX))*distortAmount5;
+        col.a  = proportionTo(col.a,sin(distortAmount5*gl_FragCoord.y)*(1-distortAmount5),distortAmount5 );
+//        col.a = (1-distortAmount5) + sin(distortAmount5*gl_FragCoord.y)*(1-distortAmount5);
+    }
+    
+    gl_FragColor =col;
 	
 }
