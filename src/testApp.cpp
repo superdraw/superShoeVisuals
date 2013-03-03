@@ -461,8 +461,7 @@ void testApp::drawFbo(){
         // MARK: draw the words
         int currentLineNumber = -1;
         float lineOffset =0;
-        float currentDescender =0;
-        float oldDescender =0 ;
+        float firstLineHeight = 0;
         for (int i =0; i<=phraseWordIndex; i++) {
             // translate by the size of the last shapes drawn???
             //font.drawStringAsShapes(currentPhraseWords[i], 0, i*144);
@@ -476,35 +475,27 @@ void testApp::drawFbo(){
             
             if(wordBlock->lineNumber>currentLineNumber){
                 // calculate this line's max height:
+//                cout << "lineheight=" << wordBlock->font.getLineHeight() << "\n";
                 currentLineNumber = wordBlock->lineNumber;
 //                float myMaxLineHeight = wordBlock->bounds.height;
                 float myMaxLineHeight = wordBlock->fontHeight;
-                float myMaxDescender = (wordBlock->bounds.height+wordBlock->bounds.y);
+//                float myMaxDescender = (wordBlock->bounds.height+wordBlock->bounds.y);
                 for (int k=i+1; k<=phraseWordIndex; k++) {
                     // look forward to find the largest lineheight on THIS line:
                     TextWordBlock* nextBlock = &wordBlocks[k];
                     if(nextBlock->lineNumber == currentLineNumber){
 //                        float h =nextBlock->bounds.height;
                         float h = nextBlock->fontHeight;
-                        float y = (nextBlock->bounds.height+nextBlock->bounds.y);
                         if(h>myMaxLineHeight) myMaxLineHeight = h;
-                        if(y>myMaxDescender) myMaxDescender = y;
                     }else{
                         break;
                     }
                 }
-                wordLines[currentLineNumber].descenderHeight = myMaxDescender;
-                wordLines[currentLineNumber].maxHeight = myMaxLineHeight;
-//                currentDescender = myMaxDescender;
-                float nextDescender = currentLineNumber+1<currentTotalLines ? wordLines[currentLineNumber+1].descenderHeight : 0;
- //               float nextDescender = currentLineNumber-1>0 ? wordLines[currentLineNumber-1].descenderHeight : 0;
                 totalMaxHeight+=myMaxLineHeight;//+nextDescender;//+oldDescender;///2;
-                currentDescender = myMaxDescender;
-                oldDescender = currentDescender;
-                // currentMaxHeight = wordBlock->bounds.height;
                 
             }
 
+            if(currentLineNumber==0)firstLineHeight = totalMaxHeight;
             
            // float nextDescender = currentLineNumber-1>=0 ? wordLines[currentLineNumber].descenderHeight : 0;
             wordBlock->goalPosition.y = totalMaxHeight;
@@ -526,7 +517,7 @@ void testApp::drawFbo(){
             
         }
         if(totalMaxHeight<kFBOHeight){
-            textStartY = centerPoint-(totalMaxHeight/2);
+            textStartY = centerPoint-(60)-(totalMaxHeight/2);
         }else{
             textStartY = kFBOHeight-(totalMaxHeight)-100;
         }
