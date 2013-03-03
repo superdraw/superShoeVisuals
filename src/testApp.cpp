@@ -48,6 +48,7 @@ void testApp::setup(){
     int fontSteps = 3;
     for (int i=0; i<fontSteps; i++) {
         float size = 100+ ((float)i/(fontSteps-1))*100;
+        cout << "loading fontsize " << size << "\n";
         ofTrueTypeFont tempFont;
         tempFont.loadFont("type/OpenSans-ExtraBold.ttf", size, true, false, true, 0.2, 100);
         font.push_back(tempFont);
@@ -150,17 +151,74 @@ void testApp::update(){
         oldPhraseIndex = currentPhraseIndex;
         lastPhraseWordIteratedTime = currentTime;
         currentPhraseWords = ofSplitString(phrases[currentPhraseIndex], " ");
+        cout << "new phrase=" << phrases[currentPhraseIndex] << "\n";
         
+        int lineNumber =0 ;
+        ofPoint startPoint;
+        startPoint.x = 176;
+        float space = 80;
+        float currentLineHeight = 0;
+        for (int i=0; i<wordLines.size(); i++) {
+            wordLines[i].maxHeight =0;
+        }
         for (int i=0; i<currentPhraseWords.size(); i++) {
             TextWordBlock wordBlock;
-            int sizeIndex = ofRandom(0, font.size()-1);
+            int sizeIndex = ofRandom(0, font.size());
+            cout << " wordsize=" << sizeIndex;
+//            sizeIndex = 0;
             wordBlock.initParams(currentPhraseWords[i], font[sizeIndex]);
+            // set the line number of the block:
+            // TODO: this is ridiculously lame:
+            if(sizeIndex==0){
+                wordBlock.fontHeight = 170;
+            }else if (sizeIndex==1){
+                wordBlock.fontHeight = 210;
+            }else if (sizeIndex==2){
+                wordBlock.fontHeight = 260;
+            }
+            wordBlock.goalPosition.x = startPoint.x;
+            wordBlock.goalPosition.y = startPoint.y;
+        
+            
+            if(startPoint.x+wordBlock.bounds.width+space<kFBOWidth){
+                startPoint.x+=wordBlock.bounds.width + space;
+                if(wordBlock.bounds.height>currentLineHeight) currentLineHeight = wordBlock.bounds.height;
+            }else{
+                startPoint.x = 176;
+                // this should be calculated not here:
+                currentLineHeight = wordBlock.bounds.height;
+                startPoint.y += currentLineHeight;
+                wordBlock.goalPosition.x = startPoint.x;
+                wordBlock.goalPosition.y = startPoint.y;
+                startPoint.x+=wordBlock.bounds.width + space;
+                lineNumber++;
+            }
+            
+            
+            
+            // MARK: set goal positions of each block of text:
+            wordBlock.lineNumber = lineNumber;
+            //wordBlock.goalPosition.y = lineNumber*150;
             if(i<wordBlocks.size()){
                 wordBlocks[i] = wordBlock;
             }else{
                 wordBlocks.push_back(wordBlock);
             }
         }
+        currentTotalLines = lineNumber;
+        // push the current wordblocks into vectors inside their lines:
+        
+        for (int i=0; i<currentPhraseWords.size(); i++) {
+            IVTextLine line;
+            int k = wordBlocks[i].lineNumber;
+            if(k<wordLines.size()){
+                wordLines[k] = line;
+            }else{
+                wordLines.push_back(line);
+            }
+
+        }
+        cout << "\n";
 //        wordBlock1.initParams(currentPhraseWords[0], font[0]);
 //        wordBlock2.initParams(currentPhraseWords[1], font[font.size()-1]);
         
@@ -386,12 +444,9 @@ void testApp::drawFbo(){
         ofRectangle bounds =        currentFont.getStringBoundingBox(phraseString, 0, 0);
         ofPushMatrix();
         ofTranslate(176,(centerPoint+lineHeight)-bounds.height/2);
-//        ofSetColor(255, 0, 0,100);
-//        ofRect(bounds);
-//        cout << bounds.height <<"\n";
-//                ofTranslate(0, );
+
 //        ofNoFill();
-        currentFont.drawStringAsShapes(phraseString, 0, 0);
+//        currentFont.drawStringAsShapes(phraseString, 0, 0);
         
         ofPopMatrix();
         ofFill();
@@ -400,26 +455,82 @@ void testApp::drawFbo(){
         ofRectangle prevBounds;
         float totalMaxHeight =0;
         float currentMaxHeight =0;
-        float space = 80;
+        
         startPoint.y = centerPoint-199;
         startPoint.x = 176;
+        // MARK: draw the words
+        int currentLineNumber = -1;
+        float lineOffset =0;
+        float currentDescender =0;
+        float oldDescender =0 ;
         for (int i =0; i<=phraseWordIndex; i++) {
             // translate by the size of the last shapes drawn???
             //font.drawStringAsShapes(currentPhraseWords[i], 0, i*144);
+            TextWordBlock* wordBlock = &wordBlocks[i];
+            // set the goalY
+            // calculate offset:
+           // if(wordBlock->bounds.y>0){
+//            cout << wordBlock->word << " >0 dif=" << wordBlock->bounds.y+wordBlock->bounds.height << "\n";
+           // }
+
             
-//            wordBlocks[i].draw(startPoint.x,startPoint.y);
-            if(wordBlocks[i].bounds.height>currentMaxHeight) currentMaxHeight = wordBlocks[i].bounds.height;
-            if(startPoint.x+wordBlocks[i].bounds.width+space<kFBOWidth){
-                startPoint.x+=wordBlocks[i].bounds.width + space;
-            }else{
-                startPoint.x = 176;
-                startPoint.y += currentMaxHeight;
-                currentMaxHeight = wordBlocks[i].bounds.height;
+            if(wordBlock->lineNumber>currentLineNumber){
+                // calculate this line's max height:
+                currentLineNumber = wordBlock->lineNumber;
+//                float myMaxLineHeight = wordBlock->bounds.height;
+                float myMaxLineHeight = wordBlock->fontHeight;
+                float myMaxDescender = (wordBlock->bounds.height+wordBlock->bounds.y);
+                for (int k=i+1; k<=phraseWordIndex; k++) {
+                    // look forward to find the largest lineheight on THIS line:
+                    TextWordBlock* nextBlock = &wordBlocks[k];
+                    if(nextBlock->lineNumber == currentLineNumber){
+//                        float h =nextBlock->bounds.height;
+                        float h = nextBlock->fontHeight;
+                        float y = (nextBlock->bounds.height+nextBlock->bounds.y);
+                        if(h>myMaxLineHeight) myMaxLineHeight = h;
+                        if(y>myMaxDescender) myMaxDescender = y;
+                    }else{
+                        break;
+                    }
+                }
+                wordLines[currentLineNumber].descenderHeight = myMaxDescender;
+                wordLines[currentLineNumber].maxHeight = myMaxLineHeight;
+//                currentDescender = myMaxDescender;
+                float nextDescender = currentLineNumber+1<currentTotalLines ? wordLines[currentLineNumber+1].descenderHeight : 0;
+ //               float nextDescender = currentLineNumber-1>0 ? wordLines[currentLineNumber-1].descenderHeight : 0;
+                totalMaxHeight+=myMaxLineHeight;//+nextDescender;//+oldDescender;///2;
+                currentDescender = myMaxDescender;
+                oldDescender = currentDescender;
+                // currentMaxHeight = wordBlock->bounds.height;
+                
             }
-            prevBounds = wordBlocks[i].bounds;
+
+            
+           // float nextDescender = currentLineNumber-1>=0 ? wordLines[currentLineNumber].descenderHeight : 0;
+            wordBlock->goalPosition.y = totalMaxHeight;
+//            if(i+1<=phraseWordIndex && wordBlocks[i+1].lineNumber!=currentLineNumber){
+//                // we're going to be a new line, add the old maxlineheight to the lineOffset:
+//                lineOffset+=myMaxLineHeight;
+//            }
+            
+//            wordBlock->offset.y = myMaxLineHeight;
+            wordBlock->update(10);
+            // search forward to get the nextLines max height
+            wordBlock->draw(wordBlock->currentPosition.x+wordBlock->offset.x,wordBlock->currentPosition.y+wordBlock->offset.y+textStartY);
+            // we're on a new line, add the maxheight to the current thing.
+            //            if(wordBlock->bounds.height >currentMaxHeight){
+//                wordBlock->bounds.height = currentMaxHeight;
+//            }
+            
+            
             
         }
-        textStartY = totalMaxHeight;
+        if(totalMaxHeight<kFBOHeight){
+            textStartY = centerPoint-(totalMaxHeight/2);
+        }else{
+            textStartY = kFBOHeight-(totalMaxHeight)-100;
+        }
+
 //        ofTranslate(0,wordBlock1.bounds.height);
 //        wordBlock1.draw();
 //        ofTranslate(wordBlock1.bounds.width,0);

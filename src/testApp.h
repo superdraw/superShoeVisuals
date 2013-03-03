@@ -4,6 +4,7 @@
 #include "ofxOsc.h"
 #include "ShoeConstants.h"
 #include "TextWordBlock.h"
+#include "IVTextLine.h"
 
 #define kOscListenPort 12345
 
@@ -29,6 +30,9 @@ class testApp : public ofBaseApp{
 		
 		vector<ofTrueTypeFont> font;
         vector<TextWordBlock> wordBlocks;
+        vector<IVTextLine> wordLines;
+    int currentTotalLines;
+    
 //    TextWordBlock wordBlock1;
 //    TextWordBlock wordBlock2;
     float textStartY;

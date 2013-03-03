@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A66181216E2A30B0021767C /* IVTextLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A66181016E2A30B0021767C /* IVTextLine.cpp */; };
 		4A691FC516DDA44700A6EF4A /* IpEndpointName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A691FA116DDA44700A6EF4A /* IpEndpointName.cpp */; };
 		4A691FC616DDA44700A6EF4A /* NetworkingUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A691FA616DDA44700A6EF4A /* NetworkingUtils.cpp */; };
 		4A691FC716DDA44700A6EF4A /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A691FA716DDA44700A6EF4A /* UdpSocket.cpp */; };
@@ -76,6 +77,9 @@
 /* Begin PBXFileReference section */
 		4A48170616D9A70400DD47FA /* noise.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = noise.frag; sourceTree = "<group>"; };
 		4A48170716D9A70400DD47FA /* noise.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = noise.vert; sourceTree = "<group>"; };
+		4A66180F16E2912D0021767C /* AniUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AniUtils.h; sourceTree = "<group>"; };
+		4A66181016E2A30B0021767C /* IVTextLine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IVTextLine.cpp; sourceTree = "<group>"; };
+		4A66181116E2A30B0021767C /* IVTextLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IVTextLine.h; sourceTree = "<group>"; };
 		4A691FA116DDA44700A6EF4A /* IpEndpointName.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IpEndpointName.cpp; sourceTree = "<group>"; };
 		4A691FA216DDA44700A6EF4A /* IpEndpointName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IpEndpointName.h; sourceTree = "<group>"; };
 		4A691FA316DDA44700A6EF4A /* NetworkingUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkingUtils.h; sourceTree = "<group>"; };
@@ -350,12 +354,15 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				4A66180F16E2912D0021767C /* AniUtils.h */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* testApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,
 				4A69200C16DE813300A6EF4A /* ShoeConstants.h */,
 				4A69C32E16E16607008C9E8D /* TextWordBlock.cpp */,
 				4A69C32F16E16608008C9E8D /* TextWordBlock.h */,
+				4A66181016E2A30B0021767C /* IVTextLine.cpp */,
+				4A66181116E2A30B0021767C /* IVTextLine.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -472,6 +479,7 @@
 				4A691FD016DDA44700A6EF4A /* ofxOscReceiver.cpp in Sources */,
 				4A691FD116DDA44700A6EF4A /* ofxOscSender.cpp in Sources */,
 				4A69C33016E16608008C9E8D /* TextWordBlock.cpp in Sources */,
+				4A66181216E2A30B0021767C /* IVTextLine.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
