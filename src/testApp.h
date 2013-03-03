@@ -41,7 +41,7 @@ class testApp : public ofBaseApp{
 		bool doShader;
     
     ofColor bgColor;
-    
+    bool forceTextSize;
     ofImage img;
     int frameSequenceCounter;
     float distortAmt1;

@@ -172,7 +172,8 @@ void testApp::update(){
             TextWordBlock wordBlock;
             int sizeIndex = ofRandom(0, font.size());
             cout << " wordsize=" << sizeIndex;
-//            sizeIndex = 0;
+            
+            if(forceTextSize)sizeIndex = 1;
             wordBlock.initParams(currentPhraseWords[i], font[sizeIndex]);
             // set the line number of the block:
             // TODO: this is ridiculously lame:
@@ -601,6 +602,9 @@ void testApp::keyReleased(int key){
         distortAmt8 +=1;
     }else if (key == '9'){
         distortAmt9 +=1;
+    }
+    if(key =='f'){
+        forceTextSize=!forceTextSize;
     }
 }
 
