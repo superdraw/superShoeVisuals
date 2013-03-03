@@ -5,6 +5,11 @@ uniform float distortAmount2 = 1.0;
 uniform float distortAmount3 = 1.0;
 uniform float distortAmount4 = 1.0;
 uniform float distortAmount5 = 1.0;
+uniform float distortAmount6 = 1.0;
+uniform float distortAmount7 = 1.0;
+uniform float distortAmount8 = 1.0;
+uniform float distortAmount9 = 1.0;
+
 uniform float timeValX = 0.0;
 uniform float timeValY = 0.0;
 
@@ -34,7 +39,9 @@ void main(){
         col.a  = proportionTo(col.a,sin(distortAmount5*gl_FragCoord.y)*(1-distortAmount5),distortAmount5 );
 //        col.a = (1-distortAmount5) + sin(distortAmount5*gl_FragCoord.y)*(1-distortAmount5);
     }
-    
+    if(distortAmount9>0.){
+        col.a  = proportionTo(col.a,sin(distortAmount9*gl_FragCoord.y*timeValX*10*gl_FragCoord.x),distortAmount9 );
+    }
     gl_FragColor =col;
 	
 }

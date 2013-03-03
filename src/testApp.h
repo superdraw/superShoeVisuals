@@ -37,17 +37,22 @@ class testApp : public ofBaseApp{
 //    TextWordBlock wordBlock2;
     float textStartY;
 		ofShader shader;
+    ofShader FBOshader;
 		bool doShader;
     
-    
+    ofColor bgColor;
     
     ofImage img;
     int frameSequenceCounter;
-    float distortAmt;
+    float distortAmt1;
     float distortAmt2;
     float distortAmt3;
     float distortAmt4;
     float distortAmt5;
+    float distortAmt6;
+    float distortAmt7;
+    float distortAmt8;
+    float distortAmt9;
     
     //8 bits red, 8 bits green, 8 bits blue, from 0 to 255 in 256 steps
     ofFbo rgbaFbo; // with alpha

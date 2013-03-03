@@ -34,6 +34,12 @@ void testApp::setup(){
 	 */
     
     
+    // TODO: load config textfile here for BGCOLOR:
+    ;
+    bgColor.r = 0;
+    bgColor.g = 150;
+    bgColor.b = 0;
+    fadeAmt = 100;
     // we have to clear all the fbos so that we don't see any artefacts
 	// the clearing color does not matter here, as the alpha value is 0, that means the fbo is cleared from all colors
 	// whenever we want to draw/update something inside the fbo, we have to write that inbetween fbo.begin() and fbo.end()
@@ -56,14 +62,15 @@ void testApp::setup(){
 	
 	shader.load("shaders/noise.vert", "shaders/noise.frag");
     
+//    FBOshader.load("shaders/")
+    
     gplusLabel.allocate(152, 152, OF_IMAGE_COLOR_ALPHA);
 
     gplusLabel.loadImage("images/gplus_corner.png");
     gplusLabel.resize(152*kFBORenderScale, 152*kFBORenderScale);
 	
 	doShader = true;
-    distortAmt = 0;
-    fadeAmt = 100;
+    
     useFbo = true;
     
     currentShoeDataObject.force = 0;
@@ -289,7 +296,7 @@ void testApp::analyzeShoeData(){
 //    }
     
     if(currentShoeDataObjectSmoothed.force>100){
-        distortAmt += (currentShoeDataObjectSmoothed.force/5000);
+        distortAmt1 += (currentShoeDataObjectSmoothed.force/5000);
     }
     if(currentShoeDataObject.ay<0){
         distortAmt4 += abs(currentShoeDataObject.ay)/1000;
@@ -299,8 +306,8 @@ void testApp::analyzeShoeData(){
 void testApp::draw(){
     ofEnableAlphaBlending();
     // just clear to this color:
-    // TODO: this background color is set by which quad or place we're in!
-    ofClear(0, 100, 255);
+
+    ofClear(bgColor);
     
 //font.loadFont("type/OpenSans-ExtraBold.ttf", mouseX+10, true, false, true, 0.2, 100);
     
@@ -310,17 +317,19 @@ void testApp::draw(){
     if(useFbo) rgbaFbo.end();
     
    
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    
     if(useFbo){
+//        FBOshader.begin();
         ofSetColor(255,255,255,255);
+        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
         rgbaFbo.draw(0,0,kFBOWidth*kFBORenderScale,kFBOHeight*kFBORenderScale);
- 
+//        FBOshader.end();
 ;
     }
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     
         gplusLabel.draw(0,0);
-    ofDrawBitmapString("distortamt="+ofToString(distortAmt), 20, 40);
+    ofDrawBitmapString("distortamt1="+ofToString(distortAmt1), 20, 40);
     ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) + "\nPress 'O' to toggle fbo: " + (useFbo ? "ON" : "OFF"), 20, 10);
   
     
@@ -353,8 +362,8 @@ void testApp::drawFbo(){
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     
     
-    
-	ofSetColor(0,0,0, fadeAmt);
+    ofSetColor(bgColor, fadeAmt);
+//	ofSetColor(0,100,255, fadeAmt);
 	ofRect(0,0,kFBOWidth,kFBOHeight);
     
     // now draw the regular scene:
@@ -364,24 +373,30 @@ void testApp::drawFbo(){
 	ofFill();
     float div = 20;
 //    distortAmt3 = 1;
-	distortAmt+=(0-distortAmt)/div;
+	distortAmt1+=(0-distortAmt1)/div;
     distortAmt2+=(0-distortAmt2)/div;
-    
     distortAmt3+=(0-distortAmt3)/div;
-    
     distortAmt4+=(0-distortAmt4)/div;
     distortAmt5+=(0-distortAmt5)/div;
+    distortAmt6+=(0-distortAmt6)/div;
+    distortAmt7+=(0-distortAmt7)/div;
+    distortAmt8+=(0-distortAmt8)/div;
+    distortAmt9+=(0-distortAmt9)/div;
     
 	if( doShader ){
 		shader.begin();
         //we want to pass in some varrying values to animate our type / color
         shader.setUniform1f("timeValX", ofGetElapsedTimef() * 10 );
         shader.setUniform1f("timeValY", -ofGetElapsedTimef() * 10.1 );
-        shader.setUniform1f("distortAmount1", distortAmt );
+        shader.setUniform1f("distortAmount1", distortAmt1 );
         shader.setUniform1f("distortAmount2", distortAmt2 );
         shader.setUniform1f("distortAmount3", distortAmt3 );
         shader.setUniform1f("distortAmount4", distortAmt4 );
         shader.setUniform1f("distortAmount5", distortAmt5 );
+                shader.setUniform1f("distortAmount6", distortAmt6 );
+                shader.setUniform1f("distortAmount7", distortAmt7 );
+                shader.setUniform1f("distortAmount8", distortAmt8 );
+                shader.setUniform1f("distortAmount9", distortAmt9 );
         
         //we also pass in the mouse position
         //we have to transform the coords to what the shader is expecting which is 0,0 in the center and y axis flipped.
@@ -466,13 +481,8 @@ void testApp::drawFbo(){
             // translate by the size of the last shapes drawn???
             //font.drawStringAsShapes(currentPhraseWords[i], 0, i*144);
             TextWordBlock* wordBlock = &wordBlocks[i];
-            // set the goalY
-            // calculate offset:
-           // if(wordBlock->bounds.y>0){
-//            cout << wordBlock->word << " >0 dif=" << wordBlock->bounds.y+wordBlock->bounds.height << "\n";
-           // }
 
-            
+        
             if(wordBlock->lineNumber>currentLineNumber){
                 // calculate this line's max height:
 //                cout << "lineheight=" << wordBlock->font.getLineHeight() << "\n";
@@ -506,6 +516,13 @@ void testApp::drawFbo(){
             
 //            wordBlock->offset.y = myMaxLineHeight;
             wordBlock->update(10);
+            if(distortAmt6!=0){
+                if(i%2==1){
+                    wordBlock->offset.x=distortAmt6*1000;
+                }else{
+                    wordBlock->offset.y=distortAmt6*1000;
+                }
+            }
             // search forward to get the nextLines max height
             wordBlock->draw(wordBlock->currentPosition.x+wordBlock->offset.x,wordBlock->currentPosition.y+wordBlock->offset.y+textStartY);
             // we're on a new line, add the maxheight to the current thing.
@@ -565,8 +582,10 @@ void testApp::keyPressed  (int key){
 
 //--------------------------------------------------------------
 void testApp::keyReleased(int key){ 
-	
-    if(key == '2'){
+
+    if(key == '1'){
+        distortAmt1 += 10;
+    }else if(key == '2'){
         distortAmt2 +=1;
     }else if(key == '3'){
         distortAmt3 +=1;
@@ -574,10 +593,14 @@ void testApp::keyReleased(int key){
         distortAmt4 +=1;
     }else if(key == '5'){
         distortAmt5 +=1;
+    }else if(key == '6'){
+        distortAmt6 +=1;
     }else if(key == '7'){
-        distortAmt4 +=1;
-    }else{
-        distortAmt += 10;
+        distortAmt7 +=1;
+    }else if (key == '8'){
+        distortAmt8 +=1;
+    }else if (key == '9'){
+        distortAmt9 +=1;
     }
 }
 

@@ -7,6 +7,11 @@ uniform float distortAmount2 = 1.0;
 uniform float distortAmount3 = 1.0;
 uniform float distortAmount4 = 1.0;
 uniform float distortAmount5 = 1.0;
+uniform float distortAmount6 = 1.0;
+uniform float distortAmount7 = 1.0;
+uniform float distortAmount8 = 1.0;
+uniform float distortAmount9 = 1.0;
+
 uniform vec2 mouse;
 
 //generate a random value from four points

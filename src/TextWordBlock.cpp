@@ -13,6 +13,8 @@ void TextWordBlock::update(float animationSpeed){
     currentPosition.x += easeToInc(currentPosition.x, goalPosition.x, animationSpeed, .00001);
     currentPosition.y += easeToInc(currentPosition.y, goalPosition.y, animationSpeed, .00001);
     
+    offset.x+=easeToInc(offset.x, 0, animationSpeed, .00001);
+    offset.y+=easeToInc(offset.y, 0, animationSpeed, .00001);
 }
 void TextWordBlock::draw(float x, float y){
     
