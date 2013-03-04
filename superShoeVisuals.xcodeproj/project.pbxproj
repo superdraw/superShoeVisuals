@@ -80,6 +80,8 @@
 		4A66180F16E2912D0021767C /* AniUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AniUtils.h; sourceTree = "<group>"; };
 		4A66181016E2A30B0021767C /* IVTextLine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IVTextLine.cpp; sourceTree = "<group>"; };
 		4A66181116E2A30B0021767C /* IVTextLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IVTextLine.h; sourceTree = "<group>"; };
+		4A6857CF16E4FC0700BE9536 /* fboShader.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = fboShader.frag; sourceTree = "<group>"; };
+		4A6857D016E4FC0700BE9536 /* fboShader.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = fboShader.vert; sourceTree = "<group>"; };
 		4A691FA116DDA44700A6EF4A /* IpEndpointName.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IpEndpointName.cpp; sourceTree = "<group>"; };
 		4A691FA216DDA44700A6EF4A /* IpEndpointName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IpEndpointName.h; sourceTree = "<group>"; };
 		4A691FA316DDA44700A6EF4A /* NetworkingUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkingUtils.h; sourceTree = "<group>"; };
@@ -172,6 +174,8 @@
 		4A48170516D9A70400DD47FA /* shaders */ = {
 			isa = PBXGroup;
 			children = (
+				4A6857CF16E4FC0700BE9536 /* fboShader.frag */,
+				4A6857D016E4FC0700BE9536 /* fboShader.vert */,
 				4A48170616D9A70400DD47FA /* noise.frag */,
 				4A48170716D9A70400DD47FA /* noise.vert */,
 			);

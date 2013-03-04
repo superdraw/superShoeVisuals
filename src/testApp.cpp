@@ -1,6 +1,6 @@
 #include "testApp.h"
 
-#define kFBORenderScale .5
+#define kFBORenderScale 1
 #define kFBOWidth 1920
 #define kFBOHeight 1080
 
@@ -59,9 +59,10 @@ void testApp::setup(){
         tempFont.loadFont("type/OpenSans-ExtraBold.ttf", size, true, false, true, 0.2, 100);
         font.push_back(tempFont);
     }
-	
-	shader.load("shaders/noise.vert", "shaders/noise.frag");
     
+	shader.load("shaders/noise.vert", "shaders/noise.frag");
+    // just use the same one for now:
+    FBOshader.load("shaders/fboShader.vert","shaders/fboShader.frag");
 //    FBOshader.load("shaders/")
     
     gplusLabel.allocate(152, 152, OF_IMAGE_COLOR_ALPHA);
@@ -72,6 +73,8 @@ void testApp::setup(){
 	doShader = true;
     
     useFbo = true;
+    
+    forceTextSize = true;
     
     currentShoeDataObject.force = 0;
     
@@ -184,7 +187,7 @@ void testApp::update(){
             }else if (sizeIndex==2){
                 wordBlock.fontHeight = 260;
             }
-            wordBlock.goalPosition.x = startPoint.x;
+            wordBlock.currentPosition.x = wordBlock.goalPosition.x = startPoint.x;
             wordBlock.goalPosition.y = startPoint.y;
         
             
@@ -196,13 +199,13 @@ void testApp::update(){
                 // this should be calculated not here:
                 currentLineHeight = wordBlock.bounds.height;
                 startPoint.y += currentLineHeight;
-                wordBlock.goalPosition.x = startPoint.x;
+                wordBlock.currentPosition.x = wordBlock.goalPosition.x = startPoint.x;
                 wordBlock.goalPosition.y = startPoint.y;
                 startPoint.x+=wordBlock.bounds.width + space;
                 lineNumber++;
             }
             
-            
+            wordBlock.currentPosition.y = 1200;
             
             // MARK: set goal positions of each block of text:
             wordBlock.lineNumber = lineNumber;
@@ -320,20 +323,42 @@ void testApp::draw(){
    
     
     if(useFbo){
-//        FBOshader.begin();
+        ofTexture tex0 = rgbaFbo.getTextureReference();
+        FBOshader.setUniformTexture("tex0", tex0, 0);
+        
+        FBOshader.begin();
+        
+        FBOshader.setUniform1f("timeValX", ofGetElapsedTimef() * 10 );
+        FBOshader.setUniform1f("timeValY", -ofGetElapsedTimef() * 10.1 );
+        FBOshader.setUniform1f("distortAmount1", distortAmt1 );
+        FBOshader.setUniform1f("distortAmount2", distortAmt2 );
+        FBOshader.setUniform1f("distortAmount3", distortAmt3 );
+        FBOshader.setUniform1f("distortAmount4", distortAmt4 );
+        FBOshader.setUniform1f("distortAmount5", distortAmt5 );
+        FBOshader.setUniform1f("distortAmount6", distortAmt6 );
+        FBOshader.setUniform1f("distortAmount7", distortAmt7 );
+        FBOshader.setUniform1f("distortAmount8", distortAmt8 );
+        FBOshader.setUniform1f("distortAmount9", distortAmt9 );
+
+        
+        
         ofSetColor(255,255,255,255);
         ofEnableBlendMode(OF_BLENDMODE_ALPHA);
         rgbaFbo.draw(0,0,kFBOWidth*kFBORenderScale,kFBOHeight*kFBORenderScale);
-//        FBOshader.end();
+        FBOshader.end();
 ;
     }
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     
         gplusLabel.draw(0,0);
-    ofDrawBitmapString("distortamt1="+ofToString(distortAmt1), 20, 40);
-    ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) + "\nPress 'O' to toggle fbo: " + (useFbo ? "ON" : "OFF"), 20, 10);
+   // /*
+    ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) +
+                       "\nPress 'O' to toggle fbo: " + (useFbo ? "ON" : "OFF")+
+                       "\npress 'f' to toggle forceTextSize: " + (forceTextSize ? "ON" : "OFF")+
+                       "\n distortamt8="+ofToString(distortAmt8)
+                       , 20,10);
   
-    
+   // */
     
     // save frame?
     bool bSnapshot = false;
@@ -350,12 +375,12 @@ void testApp::draw(){
     
     ofNoFill();
     ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-    ofTranslate(currentShoeDataObjectSmoothed.ax, currentShoeDataObjectSmoothed.ay, currentShoeDataObjectSmoothed.az);
-    ofRotateX(currentShoeDataObjectSmoothed.gx);
-    ofRotateY(currentShoeDataObjectSmoothed.gy);
-    ofRotateZ(currentShoeDataObjectSmoothed.gz);
-    ofSetColor(255,255,255,50);
-    ofBox(200);
+    ofTranslate(currentShoeDataObject.ax, currentShoeDataObject.ay);
+//    ofRotateX(currentShoeDataObjectSmoothed.gx);
+//    ofRotateY(currentShoeDataObjectSmoothed.gy);
+//    ofRotateZ(currentShoeDataObjectSmoothed.gz);
+    ofSetColor(255,255,255,100);
+//    ofBox(200);
 }
 void testApp::drawFbo(){
    
@@ -373,32 +398,34 @@ void testApp::drawFbo(){
     ofSetColor(255,255,255,kTextRenderAlpha);
 	ofFill();
     float div = 20;
+    float tol = .0001;
 //    distortAmt3 = 1;
-	distortAmt1+=(0-distortAmt1)/div;
-    distortAmt2+=(0-distortAmt2)/div;
-    distortAmt3+=(0-distortAmt3)/div;
-    distortAmt4+=(0-distortAmt4)/div;
-    distortAmt5+=(0-distortAmt5)/div;
-    distortAmt6+=(0-distortAmt6)/div;
-    distortAmt7+=(0-distortAmt7)/div;
-    distortAmt8+=(0-distortAmt8)/div;
-    distortAmt9+=(0-distortAmt9)/div;
+	distortAmt1+=easeToInc(distortAmt1, 0, div, tol);
+    distortAmt2+=easeToInc(distortAmt2, 0, div, tol);
+    distortAmt3+=easeToInc(distortAmt3, 0, div, tol);
+    distortAmt4+=easeToInc(distortAmt4, 0, div, tol);
+    distortAmt5+=easeToInc(distortAmt5, 0, div, tol);
+    distortAmt6+=easeToInc(distortAmt6, 0, div, tol);
+    distortAmt7+=easeToInc(distortAmt7, 0, div, tol);
+    distortAmt8+=easeToInc(distortAmt8, 0, div, tol);
+    distortAmt9+=easeToInc(distortAmt9, 0, div, tol);
     
 	if( doShader ){
 		shader.begin();
         //we want to pass in some varrying values to animate our type / color
         shader.setUniform1f("timeValX", ofGetElapsedTimef() * 10 );
         shader.setUniform1f("timeValY", -ofGetElapsedTimef() * 10.1 );
+
         shader.setUniform1f("distortAmount1", distortAmt1 );
         shader.setUniform1f("distortAmount2", distortAmt2 );
         shader.setUniform1f("distortAmount3", distortAmt3 );
         shader.setUniform1f("distortAmount4", distortAmt4 );
         shader.setUniform1f("distortAmount5", distortAmt5 );
-                shader.setUniform1f("distortAmount6", distortAmt6 );
-                shader.setUniform1f("distortAmount7", distortAmt7 );
-                shader.setUniform1f("distortAmount8", distortAmt8 );
-                shader.setUniform1f("distortAmount9", distortAmt9 );
-        
+        shader.setUniform1f("distortAmount6", distortAmt6 );
+        shader.setUniform1f("distortAmount7", distortAmt7 );
+        shader.setUniform1f("distortAmount8", distortAmt8 );
+        shader.setUniform1f("distortAmount9", distortAmt9 );
+
         //we also pass in the mouse position
         //we have to transform the coords to what the shader is expecting which is 0,0 in the center and y axis flipped.
         //shader.setUniform2f("mouse", mouseX - ofGetWidth()/2, ofGetHeight()/2-mouseY ;)
@@ -518,10 +545,13 @@ void testApp::drawFbo(){
 //            wordBlock->offset.y = myMaxLineHeight;
             wordBlock->update(10);
             if(distortAmt6!=0){
-                if(i%2==1){
-                    wordBlock->offset.x=distortAmt6*1000;
+                float amt =distortAmt6*1000;
+                if(i%4<2){
+                    amt *= i%2==1 ? 1:-1;
+                    wordBlock->offset.x=amt;
                 }else{
-                    wordBlock->offset.y=distortAmt6*1000;
+                    amt *= i%2==1 ? 1:-1;
+                    wordBlock->offset.y=amt;
                 }
             }
             // search forward to get the nextLines max height

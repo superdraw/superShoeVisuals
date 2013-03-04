@@ -12,7 +12,9 @@ uniform float distortAmount9 = 1.0;
 
 uniform float timeValX = 0.0;
 uniform float timeValY = 0.0;
-
+float rand2(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 float proportionTo(float n1,float n2,float percent){
 	// p = between 0 and 1
 	return ((n2-n1)*percent)+n1;
@@ -35,12 +37,12 @@ void main(){
 //	}
     vec4 col = gl_Color;
     if(distortAmount5>0.){
-//        col+= col* cos(sin(timeValX))*distortAmount5;
-        col.a  = proportionTo(col.a,sin(distortAmount5*gl_FragCoord.y)*(1-distortAmount5),distortAmount5 );
-//        col.a = (1-distortAmount5) + sin(distortAmount5*gl_FragCoord.y)*(1-distortAmount5);
+
+//        col.a  = proportionTo(col.a,sin(distortAmount5*gl_FragCoord.y)*(1-distortAmount5),distortAmount5 );
+
     }
     if(distortAmount9>0.){
-        col.a  = proportionTo(col.a,sin(distortAmount9*gl_FragCoord.y*timeValX*10*gl_FragCoord.x),distortAmount9 );
+        col.a  = proportionTo(col.a,rand2(vec2(timeValX*10.,timeValY)*gl_FragCoord.xy)*2.-1.,distortAmount9 );
     }
     gl_FragColor =col;
 	

@@ -76,6 +76,8 @@ void main(){
 	float dist =  sqrt(d.x*d.x + d.y*d.y);
     float maxDist = 1200;
     float masterAreaModifier = 1;
+    vec4 col = gl_Color;
+    
 	if( dist < maxDist && dist > 0  ){
 		
         
@@ -93,10 +95,27 @@ void main(){
 		d /= dist;
 		float p = dist/maxDist;
 		//apply the repulsion to our position
-		pos.x += d.x * p * 1800.0f*distortAmount3*masterAreaModifier ;
-		pos.y += d.y * p * 1800.0f*distortAmount3*masterAreaModifier ;
+      
+        if(distortAmount3!=0){
+            pos.x += d.x * p * 1800.0f*distortAmount3*masterAreaModifier ;
+            pos.y += d.y * p * 1800.0f*distortAmount3*masterAreaModifier ;
+            col.a -=distortAmount3*masterAreaModifier;
+        }
+//                    col.g -=distortAmount3*masterAreaModifier;
+//                    col.b -=distortAmount3*masterAreaModifier;
+//                    col.r -=distortAmount3*masterAreaModifier;
+        if(distortAmount7!=0){
+            pos.y+= sin(pos.x+timeValX*2)*180*distortAmount7*masterAreaModifier;
+            col.a += sin(pos.x)*distortAmount7*masterAreaModifier;
+//              if(mod(floor(pos.x + timeValX*2),10)<=5){
+//                  pos.x += d.x * p * 180.0f*distortAmount7 ;
+//                  pos.y += d.y * p * 180.0f*distortAmount7 ;
+//                  col.a -=distortAmount7;
+//                  
+//              }
+        }
 	}
-    vec4 col = gl_Color;
+    
 
 	//modify our position with the smooth noise
 	pos.x += noiseAmntX * 20.0 *distortAmount1*masterAreaModifier;
@@ -116,7 +135,7 @@ void main(){
     if(distortAmount4!=0){
 //        float roundAmt = 100.0*distortAmount2;
 //        pos.x+=distortAmount4*100.;
-        if(mod(floor(pos.x),4)==0){
+        if(mod(floor(pos.x+timeValX*2),4)==0){
             pos.y +=rand2(pos2D)*distortAmount4*5000*masterAreaModifier;
             pos.y -=rand2(pos2Dinv)*distortAmount4*5000*masterAreaModifier;
             col.a-=distortAmount4*2;

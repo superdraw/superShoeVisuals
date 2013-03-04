@@ -55,16 +55,17 @@ static inline float easeTo(float targ,float goal,float divisor,float tol){
 	}
 }
 static inline float easeToInc(float targ,float goal,float divisor,float tol){
-//	float dif = ();
-	return (goal-targ)/divisor;
-//	if (fabs(dif)>tol) {
-//		//if(divisor==0)return 0;
-//		//float amt = dif/divisor;
-//		// should just return targ if round(amt)==0
-//		
-//	} else {
-//		return 0;
-//	}
+	float dif = (goal-targ);
+
+	if (fabs(dif)>tol) {
+//		if(divisor==0)return 0;
+        return dif/divisor;
+		//float amt = dif/divisor;
+		// should just return targ if round(amt)==0
+		
+	} else {
+		return dif;
+	}
 }
 static inline float incrementTo(float targ, float goal, float inc){
 	float ret = targ;
