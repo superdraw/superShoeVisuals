@@ -22,6 +22,8 @@
 		4A691FD016DDA44700A6EF4A /* ofxOscReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A691FC116DDA44700A6EF4A /* ofxOscReceiver.cpp */; };
 		4A691FD116DDA44700A6EF4A /* ofxOscSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A691FC316DDA44700A6EF4A /* ofxOscSender.cpp */; };
 		4A69C33016E16608008C9E8D /* TextWordBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A69C32E16E16607008C9E8D /* TextWordBlock.cpp */; };
+		4A6AC33D16E6A32D004566D4 /* dataDisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6AC33A16E6A32D004566D4 /* dataDisplay.cpp */; };
+		4A6AC34016E6A499004566D4 /* SimpleDataHolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6AC33E16E6A499004566D4 /* SimpleDataHolder.cpp */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
 		E4328149138ABC9F0047C5CB /* openFrameworksDebug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4328148138ABC890047C5CB /* openFrameworksDebug.a */; };
 		E45BE97B0E8CC7DD009D7055 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9710E8CC7DD009D7055 /* AGL.framework */; };
@@ -117,6 +119,11 @@
 		4A69200C16DE813300A6EF4A /* ShoeConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShoeConstants.h; sourceTree = "<group>"; };
 		4A69C32E16E16607008C9E8D /* TextWordBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextWordBlock.cpp; sourceTree = "<group>"; };
 		4A69C32F16E16608008C9E8D /* TextWordBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextWordBlock.h; sourceTree = "<group>"; };
+		4A6AC33A16E6A32D004566D4 /* dataDisplay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dataDisplay.cpp; sourceTree = "<group>"; };
+		4A6AC33B16E6A32D004566D4 /* dataDisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dataDisplay.h; sourceTree = "<group>"; };
+		4A6AC33C16E6A32D004566D4 /* statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = statistics.h; sourceTree = "<group>"; };
+		4A6AC33E16E6A499004566D4 /* SimpleDataHolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleDataHolder.cpp; path = SimpleData/SimpleDataHolder.cpp; sourceTree = "<group>"; };
+		4A6AC33F16E6A499004566D4 /* SimpleDataHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleDataHolder.h; path = SimpleData/SimpleDataHolder.h; sourceTree = "<group>"; };
 		BBAB23BE13894E4700AA2426 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../libs/glut/lib/osx/GLUT.framework; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E45BE9710E8CC7DD009D7055 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
@@ -286,6 +293,16 @@
 			path = src;
 			sourceTree = "<group>";
 		};
+		4A6AC33916E6A32D004566D4 /* dataDisplay */ = {
+			isa = PBXGroup;
+			children = (
+				4A6AC33A16E6A32D004566D4 /* dataDisplay.cpp */,
+				4A6AC33B16E6A32D004566D4 /* dataDisplay.h */,
+				4A6AC33C16E6A32D004566D4 /* statistics.h */,
+			);
+			path = dataDisplay;
+			sourceTree = "<group>";
+		};
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
@@ -358,6 +375,7 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				4A6AC33916E6A32D004566D4 /* dataDisplay */,
 				4A66180F16E2912D0021767C /* AniUtils.h */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* testApp.cpp */,
@@ -367,6 +385,8 @@
 				4A69C32F16E16608008C9E8D /* TextWordBlock.h */,
 				4A66181016E2A30B0021767C /* IVTextLine.cpp */,
 				4A66181116E2A30B0021767C /* IVTextLine.h */,
+				4A6AC33E16E6A499004566D4 /* SimpleDataHolder.cpp */,
+				4A6AC33F16E6A499004566D4 /* SimpleDataHolder.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -484,6 +504,8 @@
 				4A691FD116DDA44700A6EF4A /* ofxOscSender.cpp in Sources */,
 				4A69C33016E16608008C9E8D /* TextWordBlock.cpp in Sources */,
 				4A66181216E2A30B0021767C /* IVTextLine.cpp in Sources */,
+				4A6AC33D16E6A32D004566D4 /* dataDisplay.cpp in Sources */,
+				4A6AC34016E6A499004566D4 /* SimpleDataHolder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

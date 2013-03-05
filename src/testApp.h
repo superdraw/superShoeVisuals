@@ -5,6 +5,7 @@
 #include "ShoeConstants.h"
 #include "TextWordBlock.h"
 #include "IVTextLine.h"
+#include "dataDisplay.h"
 
 #define kOscListenPort 12345
 
@@ -62,6 +63,8 @@ class testApp : public ofBaseApp{
     bool useFbo;
     
     void drawBackground();
+//    void drawLineFromData();
+    void drawLineFromData(float x1, float x2, float y,float currentVal, float prevVal, float maxVal, float minVal, float height);
     
     ofImage gplusLabel;
     
@@ -77,7 +80,11 @@ class testApp : public ofBaseApp{
     void updateShoeDataObjectWithData(ShoeDataObject newData);
     ShoeDataObject currentShoeDataObject;
     ShoeDataObject currentShoeDataObjectSmoothed;
+    ShoeDataObject maxValues;
+    ShoeDataObject minValues;
+    
     vector<ShoeDataObject> dataObjects;
+    vector<dataDisplay>dataDisplays;
     
     ShoeDataObject shoeDataObjectWorking;
     
@@ -92,5 +99,7 @@ class testApp : public ofBaseApp{
     float lastPhraseWordIteratedTime;
     float lastPhraseSelectedTime;
     int renderedPhraseLineCount;
+    
+    int renderDataMode;
 };
 

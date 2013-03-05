@@ -9,8 +9,14 @@
 
 #ifndef superShoeVisuals_ShoeDataObject_h
 #define superShoeVisuals_ShoeDataObject_h
+#include <iostream>
+#include <vector>
+
+#define kShoeMaxTrackedValues 7
 
 typedef struct{
+    float values [kShoeMaxTrackedValues];
+//    vector <float> values;
     float ax;
     float ay;
     float az;

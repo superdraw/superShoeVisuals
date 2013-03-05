@@ -50,8 +50,8 @@ void testApp::setup(){
     //std::exit(0);
     ofSetLogLevel(OF_LOG_VERBOSE);
     // TODO: get this from config file!
-    // MARK: serial setup6
-    serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
+    // MARK: SERIAL INIT (now just on spacebar)
+//    serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
     
     
 	ofSetLogLevel(OF_LOG_VERBOSE);
@@ -77,8 +77,8 @@ void testApp::setup(){
     // TODO: load config textfile here for BGCOLOR:
     ;
     bgColor.r = 0;
-    bgColor.g = 150;
-    bgColor.b = 0;
+    bgColor.g = 120;
+    bgColor.b = 255;
     fadeAmt = 100;
     // we have to clear all the fbos so that we don't see any artefacts
 	// the clearing color does not matter here, as the alpha value is 0, that means the fbo is cleared from all colors
@@ -217,26 +217,32 @@ void testApp::update(){
                 if (!isStringVal){
                     float val = ofToFloat(valStrings[j]);
                     // TODO: check against names of stuff here and populate our object:
-                    cout<< name << " = " << val << "\n";
+//                    cout<< name << " = " << val << "\n";
                     if(name == "fsr"){
                         // FORCE
                         newShoeData.force = val;
+                        newShoeData.values[0] = val;
                     }else if (name == "accel_x"){
                         newShoeData.ax = val;
+                        newShoeData.values[1] = val;
                     }else if (name == "accel_z"){
                         newShoeData.az = val;
+                        newShoeData.values[2] = val;
                     }else if (name == "playingId"){
                         newShoeData.textIndex = val;
                     }else if (name == "singleTap"){
                         newShoeData.singleTap = val;
+                        newShoeData.values[3] = val;
                     }else if (name == "freeFall"){
                         newShoeData.freeFall = val;
+                        newShoeData.values[4] = val;
                     }else if (name == "activity"){
                         newShoeData.activity = val;
+                        newShoeData.values[5] = val;
                     }else if (name == "stepsPerMinute"){
                         newShoeData.stepsPerMinute = val;
+                        newShoeData.values[6] = val;
                     }
-                    
 //                    displays[j/2].addValue(val);
 //                    displays[j/2].bAmStringData = false;
                 }else {
@@ -266,6 +272,7 @@ void testApp::update(){
         if(m.getAddress() == "/shoeData"){
             // 8 floats and an action text INT
             ShoeDataObject shoeData;
+            shoeData.textIndex = 0;
             //force first:
             shoeData.time = m.getArgAsFloat(1);
             
@@ -278,7 +285,10 @@ void testApp::update(){
             shoeData.gx = m.getArgAsFloat(5);
             shoeData.gy = m.getArgAsFloat(6);
             shoeData.gz = m.getArgAsFloat(7);
-            
+            int numArgs = m.getNumArgs();
+            for (int i =0; i<kShoeMaxTrackedValues && i< numArgs; i++) {
+                shoeData.values[i] = m.getArgAsFloat(i);
+            }
             //shoeData.textIndex = m.getArgAsInt32(8);
 //            cout << "shoe " << shoeData.force << " ay" << shoeData.ay << "\n";
             // TODO: call this from serial as well when not using OSC
@@ -416,6 +426,8 @@ void testApp::updateShoeDataObjectWithData(ShoeDataObject newData){
     
     currentShoeDataObjectSmoothed.force +=(currentShoeDataObject.force-currentShoeDataObjectSmoothed.force)/smoothingDiv;
 
+//    dataDisplays.push_back(<#const value_type &__x#>)
+    
     // this is better for doing this:
     dataObjects.push_back(currentShoeDataObject);
     if (dataObjects.size() > kObjectBufferSize){
@@ -437,18 +449,39 @@ void testApp::analyzeShoeData(){
     
     // look through the buffer and detect stuff:
     //float forceChange = 0;
+//    ShoeDataObject min;
+//    ShoeDataObject max;
+    // add values for current shoeData
+    for (int k =0;k<kShoeMaxTrackedValues; k++) {
+        float val = currentShoeDataObject.values[k];
+        if(val<minValues.values[k]) minValues.values[k] =val;
+        if(val>maxValues.values[k]) maxValues.values[k] = val;
+    }
     for (int i =1; i<dataObjects.size(); i++) {
         // look at rates of change over the last xx data objects:
         // let's look at force:
+    
+        // move through the data values:
+        
+//        if(dataObjects[i].force<minValues.force) minValues.force = dataObjects[i].force;
+//        if(dataObjects[i].force>maxValues.force) maxValues.force = dataObjects[i].force;
+//
         shoeDataObjectWorking.force+= dataObjects[i].force - dataObjects[i-1].force;
         shoeDataObjectWorking.ay+= dataObjects[i].ay - dataObjects[i-1].ay;
     }
-    
+//    minValues = min;
+//    maxValues = max;
     
     if(currentShoeDataObject.freeFall!=0){
 //        distortAmt3+=.2;
-        distortAmt5+=1;
+        distortAmt5+=.1;
     }
+    if(currentShoeDataObject.singleTap!=0){
+        distortAmt1+=.2;
+        distortAmt7 +=.3;
+    }
+//    distortAmt4=shoeDataObjectWorking.ax;
+    
 //    if(abs(shoeDataObjectWorking.ay)> 10000.){
 //        cout << "force is big " << shoeDataObjectWorking.ay << "\n";
 //        // now kill it so we retrigger. 
@@ -456,12 +489,12 @@ void testApp::analyzeShoeData(){
 //        distortAmt2+=10;
 //    }
     
-    if(currentShoeDataObjectSmoothed.force>100){
-        distortAmt1 += (currentShoeDataObjectSmoothed.force/5000);
-    }
-    if(currentShoeDataObject.ay<0){
-        distortAmt4 += abs(currentShoeDataObject.ay)/1000;
-    }
+//    if(currentShoeDataObjectSmoothed.force>100){
+//        distortAmt1 += (currentShoeDataObjectSmoothed.force/5000);
+//    }
+//    if(currentShoeDataObject.ay<0){
+//        distortAmt4 += abs(currentShoeDataObject.ay)/1000;
+//    }
 
 }
 void testApp::draw(){
@@ -482,29 +515,25 @@ void testApp::draw(){
    
     
     if(useFbo){
-        ofTexture tex0 = rgbaFbo.getTextureReference();
-        FBOshader.setUniformTexture("tex0", tex0, 0);
-        
-        FBOshader.begin();
-        
-        FBOshader.setUniform1f("timeValX", ofGetElapsedTimef() * 10 );
-        FBOshader.setUniform1f("timeValY", -ofGetElapsedTimef() * 10.1 );
-        FBOshader.setUniform1f("distortAmount1", distortAmt1 );
-        FBOshader.setUniform1f("distortAmount2", distortAmt2 );
-        FBOshader.setUniform1f("distortAmount3", distortAmt3 );
-        FBOshader.setUniform1f("distortAmount4", distortAmt4 );
-        FBOshader.setUniform1f("distortAmount5", distortAmt5 );
-        FBOshader.setUniform1f("distortAmount6", distortAmt6 );
-        FBOshader.setUniform1f("distortAmount7", distortAmt7 );
-        FBOshader.setUniform1f("distortAmount8", distortAmt8 );
-        FBOshader.setUniform1f("distortAmount9", distortAmt9 );
-
-        
+//        ofTexture tex0 = rgbaFbo.getTextureReference();
+//        FBOshader.setUniformTexture("tex0", tex0, 0);
+//        FBOshader.begin();
+//        FBOshader.setUniform1f("timeValX", ofGetElapsedTimef() * 10 );
+//        FBOshader.setUniform1f("timeValY", -ofGetElapsedTimef() * 10.1 );
+//        FBOshader.setUniform1f("distortAmount1", distortAmt1 );
+//        FBOshader.setUniform1f("distortAmount2", distortAmt2 );
+//        FBOshader.setUniform1f("distortAmount3", distortAmt3 );
+//        FBOshader.setUniform1f("distortAmount4", distortAmt4 );
+//        FBOshader.setUniform1f("distortAmount5", distortAmt5 );
+//        FBOshader.setUniform1f("distortAmount6", distortAmt6 );
+//        FBOshader.setUniform1f("distortAmount7", distortAmt7 );
+//        FBOshader.setUniform1f("distortAmount8", distortAmt8 );
+//        FBOshader.setUniform1f("distortAmount9", distortAmt9 );
         
         ofSetColor(255,255,255,255);
         ofEnableBlendMode(OF_BLENDMODE_ALPHA);
         rgbaFbo.draw(0,0,kFBOWidth*kFBORenderScale,kFBOHeight*kFBORenderScale);
-        FBOshader.end();
+//        FBOshader.end();
 ;
     }
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
@@ -514,6 +543,7 @@ void testApp::draw(){
     ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) +
                        "\nPress 'O' to toggle fbo: " + (useFbo ? "ON" : "OFF")+
                        "\npress 'f' to toggle forceTextSize: " + (forceTextSize ? "ON" : "OFF")+
+                       "\npress 'r' for renderDataMode=" + (ofToString(renderDataMode))+
                        "\n distortamt8="+ofToString(distortAmt8)
                        , 20,10);
   
@@ -543,17 +573,42 @@ void testApp::draw(){
 }
 void testApp::drawBackground(){
     // draw the data from each shoedata:
-    for (int i =1; i<dataObjects.size(); i++) {
+    float width = ofGetWidth();
+    float height = ofGetHeight();
+    int max = dataObjects.size();
+    float h = height/kShoeMaxTrackedValues;
+    for (int i =1; i<max; i++) {
         // for each one, draw a line
         
-        float p = (float)i/dataObjects.size();
-        float p2 =(float)(i-1)/dataObjects.size();
-        float x = p*ofGetWidth();
-        float ybase = 500;
-        float data = dataObjects[i].force;
-        float data2 = dataObjects[i-1].force;
-        ofLine(x, ybase+data, x,ybase+data2);
+        float p = (float)i/(max-1);
+        float p2 =(float)(i-1)/(max-1);
+//        float x = p*ofGetWidth();
+        //float ybase = 100;
+//        float data = dataObjects[i].force;
+//        float data2 = dataObjects[i-1].force;
+
+        for (int k = 0; k<kShoeMaxTrackedValues; k++) {
+            float val1 = dataObjects[i].values[k];
+            float val2 = dataObjects[i-1].values[k];
+            float ybase = ((float)k/kShoeMaxTrackedValues)*height;
+            if(renderDataMode!=0)drawLineFromData(p*width, p2*width, ybase, val1, val2, maxValues.values[k], minValues.values[k],h);
+        }
+        
+        // this is so crappy!
+        
     }
+}
+void testApp::drawLineFromData(float x1, float x2, float y,float currentVal, float prevVal, float maxVal, float minVal,float height){
+    float p = (currentVal-minVal)/((maxVal-minVal)+.000001);
+    float p2 =(prevVal-minVal)/((maxVal-minVal)+.000001);
+    
+    if(renderDataMode==1){
+        ofLine(x1, y+p*height, x2,y+p2*height);
+    }else if(renderDataMode==2){
+        ofSetColor(255, 255, 255,p*100);
+        ofRect(x1, y, x2-x1, height);
+    }
+    
 }
 void testApp::drawFbo(){
    
@@ -775,7 +830,13 @@ void testApp::drawFbo(){
 void testApp::keyPressed  (int key){
     
     if (key == ' '){
+        // MARK: serial setup!
+        serial.listDevices();
         serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
+    }
+    if(key== 'r'){
+        renderDataMode+=1;
+        if(renderDataMode==3)renderDataMode = 0;
     }
 //	if( key == 's' ){
 //		doShader = !doShader;
