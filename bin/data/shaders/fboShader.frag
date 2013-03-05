@@ -28,6 +28,7 @@ void main(){
     vec4 colorBase = texture2DRect(tex0, st);
     vec4 col = colorBase;
     vec2 timeVal = vec2(timeValX,timeValY);
+    vec2 timeVal2 = vec2(timeValY,timeValX);
     // pull a couple more coordinates:
    // if(col.r>0.5 && col.b >0.5 && col.g>0.5){
         // we're most likely white,
@@ -37,17 +38,16 @@ void main(){
 //        col.b += rand2(gl_FragCoord.xy*timeValX)*2.-1.;
         
         if(distortAmount8!=0){
-            for (int i =0; i<5;i++) {
+            for (int i =0; i<10;i++) {
                 float p = i*.1;
 //                vec2 pt = vec2(st.x-p*100.*distortAmount8,st.y-p*100.*distortAmount8);
-                float r1 = rand2(timeVal)*2-1;
-                float r2 = rand2(st)*2-1;
+                float r1 = rand2(st*timeVal)*2-1;
+                float r2 = rand2(st*timeVal2)*2-1;
                 vec2 pt = vec2(st.x+ r1*p*100*distortAmount8, st.y + r2*p*100*distortAmount8);
                 vec4 newCol = texture2DRect(tex0,pt);
                 if(newCol.r>0.5 && newCol.b >0.5 && newCol.g>0.5){
                     col+=newCol*.1;
                 }
-                
             }
         }
 //

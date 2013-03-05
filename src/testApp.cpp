@@ -1,6 +1,6 @@
 #include "testApp.h"
 
-#define kFBORenderScale 1
+#define kFBORenderScale .5
 #define kFBOWidth 1920
 #define kFBOHeight 1080
 
@@ -17,7 +17,6 @@ void testApp::setup(){
 	ofBackground(0);
 	ofSetVerticalSync(false );
     // something
-    
     // allocate FBO
 //    rgbaFbo.allocate(1080, 960, GL_RGBA); // with alpha, 8 bits red, 8 bits green, 8 bits blue, 8 bits alpha, from 0 to 255 in 256 steps
     rgbaFbo.allocate(kFBOWidth, kFBOHeight, GL_RGBA32F_ARB); // with alpha, 32 bits red, 32 bits green, 32 bits blue, 32 bits alpha, from 0 to 1 in 'infinite' steps
