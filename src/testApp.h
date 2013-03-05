@@ -67,6 +67,11 @@ class testApp : public ofBaseApp{
     ofxOscReceiver receiver;
     string current_msg_string;
     
+    // serial:
+    ofSerial serial;
+    bool serialInitSuccess;
+    string message;
+    
     void updateShoeDataObjectWithData(ShoeDataObject newData);
     ShoeDataObject currentShoeDataObject;
     ShoeDataObject currentShoeDataObjectSmoothed;

@@ -1,4 +1,5 @@
 #include "testApp.h"
+#include "Poco/RegularExpression.h"
 
 #define kFBORenderScale .5
 #define kFBOWidth 1920
@@ -6,12 +7,52 @@
 
 
 #define kTextRenderAlpha 110
+
+
+using Poco::RegularExpression;
+
+
+
+vector < string > getMatchedStrings (string stringToParse, string regex );
+vector < string > getMatchedStrings (string contents, string regex, int & lastPos ){
+    
+    vector < string > results;
+    RegularExpression regEx(regex);
+    RegularExpression::Match match;
+    
+    lastPos = 0;
+    while(regEx.match(contents, match) != 0) {
+        
+        // we get the sub string from the content
+        // and then trim the content so that we
+        // can continue to search
+        string foundStr = contents.substr(match.offset, match.length);
+        contents = contents.substr(match.offset + match.length);
+        
+        
+        lastPos += match.offset + match.length;
+        
+        results.push_back(foundStr);
+        
+    }
+    return results;
+}
+
 //--------------------------------------------------------------
 void testApp::setup(){
     // listen on the given port
 	cout << "listening for osc messages on port " << kOscListenPort << "\n";
 	receiver.setup(kOscListenPort);
     current_msg_string = "0";
+    
+    // setup serial:
+    serial.listDevices();
+    //std::exit(0);
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    // TODO: get this from config file!
+    // MARK: serial setup6
+    serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
+    
     
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofBackground(0);
@@ -112,6 +153,93 @@ void testApp::setup(){
 
 //--------------------------------------------------------------
 void testApp::update(){
+
+    // ______________________________________SERIAL UPDATING
+    // MARK: serial update
+    // zach's code:
+    
+    //------------------------------------------------------------ read serial
+    // todo: work here for good serial read and monitor connection.
+
+    unsigned char bytes[100];
+    if(serialInitSuccess){
+        int howMany = serial.readBytes(bytes, 100);
+        
+        for (int i = 0; i < howMany; i++){
+            message += (bytes[i]);
+        }
+    }
+    
+    //------------------------------------------------------------ regular expression against serial
+    int pos = 0;
+    vector < string > strs  = getMatchedStrings(message, "\\$.*?#", pos);
+    
+    
+    //------------------------------------------------------------ chomp the message data if we got good values
+    
+    if (message.size() > 0){
+        message = message.substr(pos, message.size());
+    }
+    
+    //------------------------------------------------------------ iterate through the messages, break them up by commas
+    
+    for (int i = 0; i < strs.size(); i++){
+        
+        string val = strs[i].substr(1, strs[i].size()-2);
+        vector < string > valStrings = ofSplitString(val, ",");         // split on a comma
+        
+        
+        int count = valStrings.size();                                  // count the number of values we are recording
+        
+//        if (displays.size() != count/2){                                // this is the dynamic part :)
+//            displays.resize(count/2);
+//        }
+        // populate the data displays
+        // make a new shoedata object:
+        ShoeDataObject newShoeData;
+        string name = "";
+        for (int j = 0; j < count; j++){
+            
+            if (j % 2 == 0) name = valStrings[j];
+            else {
+              //  displays[j/2].name = name;
+                bool isStringVal = false;
+                if (name.size() > 4){
+                    if (name.substr(name.size()-4, name.size()-1) == "_str"){
+                        isStringVal = true;
+                    }
+                }
+                
+                if (!isStringVal){
+                    float val = ofToFloat(valStrings[j]);
+                    // TODO: check against names of stuff here and populate our object:
+                    if(name == "ax"){
+                        newShoeData.ax = val;
+                    }else if (name == "something else"){
+                    
+                    }else if (name == "something else2"){
+                    
+                    }
+                    
+//                    displays[j/2].addValue(val);
+//                    displays[j/2].bAmStringData = false;
+                }else {
+                    // we're not going to do anything with stringval stuff
+//                    displays[j/2].bAmStringData = true;
+//                    displays[j/2].curValueString =  valStrings[j];
+                    
+                }
+                //cout << data.data[j]  << " , ";
+            }
+        }
+        // now do something with our new shoeDataObject
+        updateShoeDataObjectWithData(newShoeData);
+    }
+    
+    
+    
+    
+    
     // update OSC listener:
     while(receiver.hasWaitingMessages()){
 		// get the next message
