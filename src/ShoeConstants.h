@@ -22,7 +22,14 @@ typedef struct{
     float force;
     int textIndex;
     float time;
+    
+    float singleTap;
+    float freeFall;
+    float activity;
+float stepsPerMinute;
 
 }ShoeDataObject;
+
+
 
 #endif

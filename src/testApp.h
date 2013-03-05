@@ -8,7 +8,7 @@
 
 #define kOscListenPort 12345
 
-#define kObjectBufferSize 10
+#define kObjectBufferSize 40
 
 class testApp : public ofBaseApp{
 	
@@ -61,6 +61,8 @@ class testApp : public ofBaseApp{
     int fadeAmt;
     bool useFbo;
     
+    void drawBackground();
+    
     ofImage gplusLabel;
     
     // OSC
@@ -76,6 +78,7 @@ class testApp : public ofBaseApp{
     ShoeDataObject currentShoeDataObject;
     ShoeDataObject currentShoeDataObjectSmoothed;
     vector<ShoeDataObject> dataObjects;
+    
     ShoeDataObject shoeDataObjectWorking;
     
     int dataObjectInsertionIndex;

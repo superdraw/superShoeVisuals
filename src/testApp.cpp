@@ -147,8 +147,12 @@ void testApp::setup(){
     }
     currentPhraseIndex = 0;
     oldPhraseIndex = -1;
-    
-    dataObjects.reserve(kObjectBufferSize);
+    // maybe the reserve isn't necessary?
+//    for (int i =0; i<kObjectBufferSize; i++) {
+//        <#statements#>
+//    }
+//    
+//    dataObjects.reserve(kObjectBufferSize);
 }
 
 //--------------------------------------------------------------
@@ -213,12 +217,24 @@ void testApp::update(){
                 if (!isStringVal){
                     float val = ofToFloat(valStrings[j]);
                     // TODO: check against names of stuff here and populate our object:
-                    if(name == "ax"){
+                    cout<< name << " = " << val << "\n";
+                    if(name == "fsr"){
+                        // FORCE
+                        newShoeData.force = val;
+                    }else if (name == "accel_x"){
                         newShoeData.ax = val;
-                    }else if (name == "something else"){
-                    
-                    }else if (name == "something else2"){
-                    
+                    }else if (name == "accel_z"){
+                        newShoeData.az = val;
+                    }else if (name == "playingId"){
+                        newShoeData.textIndex = val;
+                    }else if (name == "singleTap"){
+                        newShoeData.singleTap = val;
+                    }else if (name == "freeFall"){
+                        newShoeData.freeFall = val;
+                    }else if (name == "activity"){
+                        newShoeData.activity = val;
+                    }else if (name == "stepsPerMinute"){
+                        newShoeData.stepsPerMinute = val;
                     }
                     
 //                    displays[j/2].addValue(val);
@@ -276,14 +292,18 @@ void testApp::update(){
     float currentTime = ofGetElapsedTimef();
    
     //TODO: this should be coming from the shoe!
-    if(currentTime-lastPhraseSelectedTime>6){
-        lastPhraseSelectedTime = currentTime;
-        currentPhraseIndex++;
-        currentPhraseIndex %= phrases.size();
-    }
+    
+//    if(currentTime-lastPhraseSelectedTime>6){
+//        lastPhraseSelectedTime = currentTime;
+//        currentPhraseIndex++;
+//        currentPhraseIndex %= phrases.size();
+//    }
+    
+    
+    currentPhraseIndex = currentShoeDataObject.textIndex;
     
     // MARK: phrase and text timing info
-    if(oldPhraseIndex != currentPhraseIndex){
+    if(oldPhraseIndex != currentPhraseIndex && currentPhraseIndex!=-1){
         phraseWordIndex = 0;
         oldPhraseIndex = currentPhraseIndex;
         lastPhraseWordIteratedTime = currentTime;
@@ -396,15 +416,20 @@ void testApp::updateShoeDataObjectWithData(ShoeDataObject newData){
     
     currentShoeDataObjectSmoothed.force +=(currentShoeDataObject.force-currentShoeDataObjectSmoothed.force)/smoothingDiv;
 
-    if(dataObjects.size()<kObjectBufferSize){
-        dataObjects.push_back(currentShoeDataObject);
-    }else{
-        dataObjectInsertionIndex++;
-        if(dataObjectInsertionIndex>dataObjects.size()-1){
-            dataObjectInsertionIndex = 0;
-        }
-        dataObjects[dataObjectInsertionIndex] = currentShoeDataObject;
+    // this is better for doing this:
+    dataObjects.push_back(currentShoeDataObject);
+    if (dataObjects.size() > kObjectBufferSize){
+        dataObjects.erase(dataObjects.begin());
     }
+//    if(dataObjects.size()<kObjectBufferSize){
+//        dataObjects.push_back(currentShoeDataObject);
+//    }else{
+//        dataObjectInsertionIndex++;
+//        if(dataObjectInsertionIndex>dataObjects.size()-1){
+//            dataObjectInsertionIndex = 0;
+//        }
+//        dataObjects[dataObjectInsertionIndex] = currentShoeDataObject;
+//    }
 }
 //--------------------------------------------------------------
 void testApp::analyzeShoeData(){
@@ -419,6 +444,11 @@ void testApp::analyzeShoeData(){
         shoeDataObjectWorking.ay+= dataObjects[i].ay - dataObjects[i-1].ay;
     }
     
+    
+    if(currentShoeDataObject.freeFall!=0){
+//        distortAmt3+=.2;
+        distortAmt5+=1;
+    }
 //    if(abs(shoeDataObjectWorking.ay)> 10000.){
 //        cout << "force is big " << shoeDataObjectWorking.ay << "\n";
 //        // now kill it so we retrigger. 
@@ -447,6 +477,8 @@ void testApp::draw(){
     drawFbo();
     if(useFbo) rgbaFbo.end();
     
+    drawBackground();
+    // draw on the background:
    
     
     if(useFbo){
@@ -508,6 +540,20 @@ void testApp::draw(){
 //    ofRotateZ(currentShoeDataObjectSmoothed.gz);
     ofSetColor(255,255,255,100);
 //    ofBox(200);
+}
+void testApp::drawBackground(){
+    // draw the data from each shoedata:
+    for (int i =1; i<dataObjects.size(); i++) {
+        // for each one, draw a line
+        
+        float p = (float)i/dataObjects.size();
+        float p2 =(float)(i-1)/dataObjects.size();
+        float x = p*ofGetWidth();
+        float ybase = 500;
+        float data = dataObjects[i].force;
+        float data2 = dataObjects[i-1].force;
+        ofLine(x, ybase+data, x,ybase+data2);
+    }
 }
 void testApp::drawFbo(){
    
@@ -726,7 +772,11 @@ void testApp::drawFbo(){
 }
 
 //--------------------------------------------------------------
-void testApp::keyPressed  (int key){ 
+void testApp::keyPressed  (int key){
+    
+    if (key == ' '){
+        serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
+    }
 //	if( key == 's' ){
 //		doShader = !doShader;
 //	}
