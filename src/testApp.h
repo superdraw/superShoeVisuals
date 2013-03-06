@@ -42,6 +42,8 @@ class testApp : public ofBaseApp{
 		bool doShader;
     
     ofColor bgColor;
+        float colorAdd;
+    
     bool forceTextSize;
     ofImage img;
     int frameSequenceCounter;
@@ -74,8 +76,13 @@ class testApp : public ofBaseApp{
     
     // serial:
     ofSerial serial;
+    void doSerialInit();
     bool serialInitSuccess;
     string message;
+    int currentSerialbytesRead;
+    int lastSerialReadTime;
+    int lastSerialInitTime;
+    
     
     void updateShoeDataObjectWithData(ShoeDataObject newData);
     ShoeDataObject currentShoeDataObject;

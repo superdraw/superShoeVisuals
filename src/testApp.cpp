@@ -48,7 +48,6 @@ void testApp::setup(){
     // setup serial:
     serial.listDevices();
     //std::exit(0);
-    ofSetLogLevel(OF_LOG_VERBOSE);
     // TODO: get this from config file!
     // MARK: SERIAL INIT (now just on spacebar)
 //    serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
@@ -79,6 +78,7 @@ void testApp::setup(){
     bgColor.r = 0;
     bgColor.g = 120;
     bgColor.b = 255;
+    colorAdd = 0;
     fadeAmt = 100;
     // we have to clear all the fbos so that we don't see any artefacts
 	// the clearing color does not matter here, as the alpha value is 0, that means the fbo is cleared from all colors
@@ -136,9 +136,9 @@ void testApp::setup(){
             if(line.empty() == false) {
                 phrases.push_back(line);
             }
-            
+
             // print out the line
-           // cout << line << endl;
+            // cout << line << endl;
             
         }
     }else{
@@ -156,23 +156,39 @@ void testApp::setup(){
 }
 
 //--------------------------------------------------------------
+void testApp::doSerialInit(){
+//    cu.FireFly-AD34-SPP
+//    serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
+        serialInitSuccess = serial.setup("cu.FireFly-AD34-SPP", 57600);
+}
 void testApp::update(){
 
     // ______________________________________SERIAL UPDATING
+    float currentTime = ofGetElapsedTimef();
     // MARK: serial update
+    if(currentTime-lastSerialReadTime>5 && currentTime-lastSerialInitTime>5){
+        lastSerialInitTime = currentTime;
+        cout << "attempting to initialize serial";
+        doSerialInit();
+    }
     // zach's code:
     
     //------------------------------------------------------------ read serial
     // todo: work here for good serial read and monitor connection.
 
     unsigned char bytes[100];
+    int bytesRead = 0;
     if(serialInitSuccess){
         int howMany = serial.readBytes(bytes, 100);
-        
+        currentSerialbytesRead=howMany;
         for (int i = 0; i < howMany; i++){
             message += (bytes[i]);
         }
     }
+    if(currentSerialbytesRead!=0) lastSerialReadTime = currentTime;
+
+    
+    
     
     //------------------------------------------------------------ regular expression against serial
     int pos = 0;
@@ -299,7 +315,7 @@ void testApp::update(){
 	}
     
 
-    float currentTime = ofGetElapsedTimef();
+//    float currentTime = ofGetElapsedTimef();
    
     //TODO: this should be coming from the shoe!
     
@@ -405,9 +421,13 @@ void testApp::update(){
             wordTime*=4;
         }
     }
+    colorAdd +=easeToInc(colorAdd, 0, 50, .000001);
     if(currentTime-lastPhraseWordIteratedTime>wordTime){
-        if(phraseWordIndex<currentPhraseWords.size()-1)phraseWordIndex++;
-        lastPhraseWordIteratedTime = currentTime;
+        if(phraseWordIndex<currentPhraseWords.size()-1){
+            phraseWordIndex++;
+            colorAdd+=30;
+            lastPhraseWordIteratedTime = currentTime;
+        }
     };
     
     analyzeShoeData();
@@ -474,12 +494,17 @@ void testApp::analyzeShoeData(){
     
     if(currentShoeDataObject.freeFall!=0){
 //        distortAmt3+=.2;
-        distortAmt5+=.1;
+
+        if(distortAmt5<.5)        distortAmt5+=.1;
     }
     if(currentShoeDataObject.singleTap!=0){
-        distortAmt1+=.2;
-        distortAmt7 +=.3;
+//        distortAmt1+=1.;
+        //distortAmt7 +=.3;
+        //distortAmt3+=1;
     }
+    float forcePercent = (currentShoeDataObject.values[0]-minValues.values[0])/((maxValues.values[0]-minValues.values[0])+.000001);
+    
+    distortAmt1 = forcePercent;
 //    distortAmt4=shoeDataObjectWorking.ax;
     
 //    if(abs(shoeDataObjectWorking.ay)> 10000.){
@@ -500,8 +525,8 @@ void testApp::analyzeShoeData(){
 void testApp::draw(){
     ofEnableAlphaBlending();
     // just clear to this color:
-
-    ofClear(bgColor);
+    
+    ofClear(bgColor.r+colorAdd,bgColor.g+colorAdd,bgColor.b+colorAdd);
     
 //font.loadFont("type/OpenSans-ExtraBold.ttf", mouseX+10, true, false, true, 0.2, 100);
     
@@ -544,6 +569,7 @@ void testApp::draw(){
                        "\nPress 'O' to toggle fbo: " + (useFbo ? "ON" : "OFF")+
                        "\npress 'f' to toggle forceTextSize: " + (forceTextSize ? "ON" : "OFF")+
                        "\npress 'r' for renderDataMode=" + (ofToString(renderDataMode))+
+                       "\n current serial bytes read=" + (ofToString(currentSerialbytesRead))+
                        "\n distortamt8="+ofToString(distortAmt8)
                        , 20,10);
   
@@ -616,7 +642,8 @@ void testApp::drawFbo(){
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     
     
-    ofSetColor(bgColor, fadeAmt);
+//    ofSetColor(bgColor, fadeAmt);
+    ofSetColor(bgColor.r+colorAdd, bgColor.g+colorAdd, bgColor.b+colorAdd,fadeAmt);
 //	ofSetColor(0,100,255, fadeAmt);
 	ofRect(0,0,kFBOWidth,kFBOHeight);
     
@@ -831,8 +858,16 @@ void testApp::keyPressed  (int key){
     
     if (key == ' '){
         // MARK: serial setup!
-        serial.listDevices();
-        serialInitSuccess = serial.setup("cu.FireFly-AD9F-SPP", 57600);
+       // serial.listDevices();
+        doSerialInit();
+    }
+    if (key == 'C'){
+        // MARK: serial setup!
+        // serial.listDevices();
+        cout << "attempting to close the serial";
+        serial.close();
+        serialInitSuccess = false;
+        
     }
     if(key== 'r'){
         renderDataMode+=1;
@@ -873,6 +908,11 @@ void testApp::keyReleased(int key){
     }
     if(key =='f'){
         forceTextSize=!forceTextSize;
+    }
+    if(key == 'l'){
+        // move the text forward:
+        currentShoeDataObject.textIndex++;
+//        currentPhraseIndex %= phrases.size();
     }
 }
 

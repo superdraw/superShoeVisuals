@@ -154,14 +154,16 @@ void main(){
         // modulate color based on distance:
         //pos.x+=sin(masterAreaModifier*distortAmount5*20)*distortAmount5*100;
         //pos.y+=cos(masterAreaModifier*distortAmount5*20)*distortAmount5*100;
-        float a = sin(timeValX+ masterAreaModifier*distortAmount5*100)*distortAmount5;
+//        float a = sin(timeValX+ masterAreaModifier*distortAmount5*100)*distortAmount5;
+        float a = col.a;
         float r =cos(timeValX+ masterAreaModifier*distortAmount5*100)*distortAmount5;
         float g =cos(timeValX+ masterAreaModifier*distortAmount5*40)*distortAmount5;
-                float b =sin(timeValX+ masterAreaModifier*distortAmount5*80)*distortAmount5;
+        float b =sin(timeValX+ masterAreaModifier*distortAmount5*80)*distortAmount5;
+        
         col.a = proportionTo(col.a,a,distortAmount5);
-            col.r =proportionTo(col.r,r,distortAmount5);
-                    col.g =proportionTo(col.g,g,distortAmount5);
-                    col.b =proportionTo(col.b,b,distortAmount5);
+        col.r =proportionTo(col.r,r,distortAmount5);
+        col.g =proportionTo(col.g,g,distortAmount5);
+        col.b =proportionTo(col.b,b,distortAmount5);
     }
     
 	//finally set the pos to be that actual position rendered
